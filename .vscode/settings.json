@@ -1,0 +1,12 @@
+{
+	"editor.tabSize": 2,
+	"editor.defaultFormatter": "biomejs.biome",
+	"editor.codeActionsOnSave": {
+		"source.fixAll.biome": "explicit"
+	},
+	"editor.formatOnSave": true,
+	"files.autoSave": "onFocusChange",
+
+	"cSpell.words": [],
+	"snyk.advanced.autoSelectOrganization": true
+}
