@@ -5,5 +5,5 @@
 	"files.autoSave": "onFocusChange",
 
 	"cSpell.words": [],
-	"snyk.advanced.autoSelectOrganization": true
+	"snyk.advanced.autoSelectOrganization": false
 }
