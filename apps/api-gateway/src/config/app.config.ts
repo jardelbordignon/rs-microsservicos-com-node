@@ -6,7 +6,7 @@ import type { NestFastifyApplication } from '@nestjs/platform-fastify'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { apiReference } from '@scalar/nestjs-api-reference'
 
-export function config(app: NestFastifyApplication) {
+export function appConfig(app: NestFastifyApplication) {
 	if (process.env.FILE_STORAGE_PROVIDER === 'disk') {
 		app.useStaticAssets({
 			decorateReply: false,

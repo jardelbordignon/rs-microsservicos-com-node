@@ -6,7 +6,7 @@ import {
 	type NestFastifyApplication,
 } from '@nestjs/platform-fastify'
 import { AppModule } from './app.module'
-import { config } from './config'
+import { appConfig } from './config/app.config'
 
 async function bootstrap() {
 	const logger = new Logger('Bootstrap')
@@ -16,7 +16,7 @@ async function bootstrap() {
 		new FastifyAdapter(),
 	)
 
-	config(app)
+	appConfig(app)
 
 	const port = Number(process.env.PORT ?? 4005)
 
