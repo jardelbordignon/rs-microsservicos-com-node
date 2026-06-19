@@ -28,18 +28,44 @@ export function appConfig(app: NestFastifyApplication) {
 		contentSecurityPolicy: {
 			directives: {
 				defaultSrc: ["'self'"],
-				scriptSrc: ["'self'", "'unsafe-inline'"],
+				scriptSrc: ["'self'"],
 				styleSrc: ["'self'", "'unsafe-inline'"],
-				imgSrc: ["'self'", 'data:'],
+				imgSrc: ["'self'", 'data:', 'https:'],
 				fontSrc: ["'self'"],
 			},
 		},
+		crossOriginEmbedderPolicy: false,
+		hsts: {
+			maxAge: 31536000,
+			includeSubDomains: true,
+			preload: true,
+		}
 	})
 
 	app.enableCors({
-		origin: process.env.CORS_ORIGINS?.split(',') || '*',
+		origin: (origin, callback) => {
+			if (!origin) return callback(null, true)
+			
+			const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || ['*']
+			
+			if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+				callback(null, true)
+			} else {
+				callback(new Error('Not allowed by CORS'), false)
+			}
+		},
 		methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-		allowedHeaders: ['Content-Type', 'Authorization'],
+		allowedHeaders: [
+			'Content-Type',
+			'Authorization',
+			'X-Request-With',
+			'Accept',
+			'Origin',
+			'Access-Control-Request-Method',
+			'Access-Control-Request-Headers',
+		],
+		credentials: true,
+		maxAge: 86400 // 24 hours
 	})
 
 	app.useGlobalPipes(
