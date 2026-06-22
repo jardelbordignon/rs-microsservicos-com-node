@@ -11,7 +11,8 @@
 		"start": "nest start",
 		"dev": "nest start --watch",
 		"start:debug": "nest start --debug --watch",
-		"start:prod": "node dist/main"
+		"start:prod": "node dist/main",
+		"push": "pnpm lint && git add . && git commit -m "
 	},
 	"dependencies": {
 		"@fastify/helmet": "^13.0.2",
