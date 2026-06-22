@@ -39,15 +39,15 @@ export function appConfig(app: NestFastifyApplication) {
 			maxAge: 31536000,
 			includeSubDomains: true,
 			preload: true,
-		}
+		},
 	})
 
 	app.enableCors({
 		origin: (origin, callback) => {
 			if (!origin) return callback(null, true)
-			
+
 			const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || ['*']
-			
+
 			if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
 				callback(null, true)
 			} else {
@@ -65,7 +65,7 @@ export function appConfig(app: NestFastifyApplication) {
 			'Access-Control-Request-Headers',
 		],
 		credentials: true,
-		maxAge: 86400 // 24 hours
+		maxAge: 86400, // 24 hours
 	})
 
 	app.useGlobalPipes(
