@@ -1,12 +1,9 @@
 import { Body, Controller, HttpStatus } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { Endpoint } from '../decorators/endpoint.decorator'
+import { LoginDto } from '../dtos/login.dto'
+import { RegisterDto } from '../dtos/register.dto'
 import { AuthService } from '../services/auth.service'
-
-type TLoginDto = {
-	email: string
-	password: string
-}
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -40,16 +37,10 @@ export class AuthController {
 			ttl: 60000,
 		},
 	})
-	async login(@Body() dto: TLoginDto) {
+	async login(@Body() dto: LoginDto) {
 		return this.authService.login(dto)
 	}
 
-	// @Post('register')
-	// @HttpCode(HttpStatus.CREATED)
-	// @ApiOperation({ summary: 'User registration' })
-	// @ApiResponse({ status: 201, description: 'Registration successful' })
-	// @ApiResponse({ status: 400, description: 'Invalid registration data' })
-	// @Throttle({ medium: { limit: 3, ttl: 60000 } })
 	@Endpoint({
 		type: 'Post',
 		path: 'register',
@@ -65,7 +56,7 @@ export class AuthController {
 			},
 		],
 	})
-	async register(@Body() dto: any) {
+	async register(@Body() dto: RegisterDto) {
 		return this.authService.register(dto)
 	}
 }
