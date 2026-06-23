@@ -5,7 +5,7 @@ import {
 	UnauthorizedException,
 } from '@nestjs/common'
 import type { FastifyRequest } from 'fastify'
-import { AuthService } from '../services/auth.service'
+import { AuthService } from '../auth/services/auth.service'
 
 @Injectable()
 export class SessionGuard implements CanActivate {

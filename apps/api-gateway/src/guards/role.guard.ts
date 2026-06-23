@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import type { FastifyRequest } from 'fastify'
-import { ROLES_KEY } from '../decorators/roles.decorator'
+import { ROLES_KEY } from '../auth/decorators/roles.decorator'
 
 @Injectable()
 export class RoleGuard implements CanActivate {
