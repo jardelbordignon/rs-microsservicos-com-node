@@ -41,14 +41,19 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
 
 		const ttlInSeconds = Math.round(ttl / 1000)
 
+		const isExpress = typeof res.setHeader === 'function'
+
+		const setHeader = (name: string, value: any) =>
+			isExpress ? res.setHeader(name, value) : res.header(name, value)
+
 		if (totalHits > limit) {
-			res.setHeader('Retry-After', ttlInSeconds)
+			setHeader('Retry-After', ttlInSeconds)
 			throw new ThrottlerException()
 		}
 
-		res.setHeader(`${this.headerPrefix}-Limit`, limit)
-		res.setHeader(`${this.headerPrefix}-Remaining`, limit - totalHits)
-		res.setHeader(`${this.headerPrefix}-Reset`, ttlInSeconds)
+		setHeader(`${this.headerPrefix}-Limit`, limit)
+		setHeader(`${this.headerPrefix}-Remaining`, limit - totalHits)
+		setHeader(`${this.headerPrefix}-Reset`, ttlInSeconds)
 
 		return true
 	}
