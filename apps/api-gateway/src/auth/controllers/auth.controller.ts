@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { AuthService } from '../service/auth.service'
+import { AuthService } from '../services/auth.service'
 
 type TLoginDto = {
 	email: string
