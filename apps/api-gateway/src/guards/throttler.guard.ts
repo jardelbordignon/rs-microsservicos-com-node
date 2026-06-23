@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common'
-import { ThrottlerGuard } from '@nestjs/throttler'
+import {
+	ThrottlerException,
+	ThrottlerGuard,
+	type ThrottlerRequest,
+} from '@nestjs/throttler'
 
 @Injectable()
 export class CustomThrottlerGuard extends ThrottlerGuard {
@@ -11,5 +15,41 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
 			: req.headers['user-agent']
 
 		return `${req.ip}-${userAgent}`
+	}
+
+	protected async handleRequest({
+		context,
+		limit,
+		ttl,
+	}: ThrottlerRequest): Promise<boolean> {
+		const { req, res } = this.getRequestResponse(context)
+
+		// Get the Throttler decorator data
+		const throttlers = this.reflector.get('throttle', context.getHandler())
+		const throttlerName = throttlers ? Object.keys(throttlers)[0] : 'default'
+
+		const tracker = await this.getTracker(req)
+		const key = this.generateKey(context, tracker, throttlerName)
+
+		const { totalHits } = await this.storageService.increment(
+			key,
+			ttl,
+			limit,
+			1,
+			throttlerName,
+		)
+
+		const ttlInSeconds = Math.round(ttl / 1000)
+
+		if (totalHits > limit) {
+			res.setHeader('Retry-After', ttlInSeconds)
+			throw new ThrottlerException()
+		}
+
+		res.setHeader(`${this.headerPrefix}-Limit`, limit)
+		res.setHeader(`${this.headerPrefix}-Remaining`, limit - totalHits)
+		res.setHeader(`${this.headerPrefix}-Reset`, ttlInSeconds)
+
+		return true
 	}
 }
