@@ -114,6 +114,9 @@ importers:
       '@types/supertest':
         specifier: ^7.2.0
         version: 7.2.0
+      fastify:
+        specifier: ^5.8.5
+        version: 5.8.5
       globals:
         specifier: ^17.6.0
         version: 17.6.0
