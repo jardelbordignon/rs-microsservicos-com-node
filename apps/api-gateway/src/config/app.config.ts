@@ -76,11 +76,52 @@ export function appConfig(app: NestFastifyApplication) {
 		}),
 	)
 
+	const swaggerPageTitle = 'Marketplace API Gateway'
+
 	const config = new DocumentBuilder()
-		.setTitle('Marketplace API Gateway')
-		.setDescription('API Gateway for Marketplace Microservices')
+		.setTitle(swaggerPageTitle)
+		.setDescription(
+			`
+      API Gateway para o sistema de Marketplace com microserviços
+
+      # Serviços Disponíveis:
+      - Users Service: Autenticação e gestão de usuários
+      - Products Service: Catálogo e gestão de produtos
+      - Checkout Service: Carrinho e processamento de pedidos
+      - Payments Service: Processamento de pagamentos
+
+      # Autenticação:
+      - Use JWT Bearer token para rotas protegidas
+      - Use Session token para validação de sessão
+      `,
+		)
 		.setVersion('0.1')
-		.addBearerAuth()
+		.setContact(
+			'Marketplace Team',
+			'<https://marketplace.com>',
+			'dev@marketplace.com',
+		)
+		.setLicense('MIT', '<https://opensource.org/licenses/MIT>')
+		.addBearerAuth(
+			{
+				type: 'http',
+				scheme: 'bearer',
+				bearerFormat: 'JWT',
+				name: 'JWT',
+				description: 'Enter JWT token',
+				in: 'header',
+			},
+			'JWT-auth',
+		)
+		.addApiKey(
+			{
+				type: 'apiKey',
+				name: 'x-session-token',
+				in: 'header',
+				description: 'Session token for user validation',
+			},
+			'session-auth',
+		)
 		.build()
 
 	const content = SwaggerModule.createDocument(app, config)
@@ -88,9 +129,48 @@ export function appConfig(app: NestFastifyApplication) {
 	app.use(
 		'/doc',
 		apiReference({
-			theme: 'purple',
 			content,
+			// authentication: {
+			// 	preferredSecurityScheme: 'bearer',
+			// },
+			pageTitle: swaggerPageTitle,
 			withFastify: true,
+			theme: 'kepler',
+			tagsSorter: 'alpha',
+			operationsSorter: 'method',
+
+			customFetch: async (input, init) => {
+				const TOKEN_KEY = 'swagger-access-token'
+
+				const headers = new Headers(init?.headers)
+
+				const token = localStorage.getItem(TOKEN_KEY)
+
+				if (token) {
+					headers.set('Authorization', `Bearer ${token}`)
+				}
+
+				const response = await fetch(input, { ...init, headers })
+
+				if (response.url.includes('/auth/login')) {
+					try {
+						const clone = response.clone()
+						const body = await clone.json()
+
+						if (body?.accessToken) {
+							localStorage.setItem(TOKEN_KEY, body.accessToken)
+						}
+					} catch (err) {
+						console.warn('Erro ao ler token do login:', err)
+					}
+				}
+
+				if (response.status === 401) {
+					localStorage.removeItem(TOKEN_KEY)
+				}
+
+				return response
+			},
 		}),
 	)
 }
