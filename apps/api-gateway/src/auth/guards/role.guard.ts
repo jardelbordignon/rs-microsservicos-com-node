@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import type { FastifyRequest } from 'fastify'
+import { ROLES_KEY } from '../decorators/roles.decorator'
 
 @Injectable()
 export class RoleGuard implements CanActivate {
@@ -15,7 +16,7 @@ export class RoleGuard implements CanActivate {
 		const targets = [context.getHandler(), context.getClass()]
 
 		const requiredRoles = this.reflector.getAllAndOverride<string[]>(
-			'roles',
+			ROLES_KEY,
 			targets,
 		)
 

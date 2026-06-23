@@ -6,6 +6,7 @@ import {
 import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
 import { Observable } from 'rxjs'
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator'
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -23,7 +24,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 		]
 
 		const isPublic = this.reflector.getAllAndOverride<boolean>(
-			'isPublic',
+			IS_PUBLIC_KEY,
 			targets,
 		)
 
