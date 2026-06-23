@@ -1,9 +1,11 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
+import { APP_GUARD } from '@nestjs/core'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { AuthModule } from './auth/auth.module'
+import { CustomThrottlerGuard } from './guards/throttler.guard'
 import { LoggingMiddleware } from './middleware/logging/logging.middleware'
 import { MiddlewareModule } from './middleware/middleware.module'
 import { ProxyModule } from './proxy/proxy.module'
@@ -18,17 +20,17 @@ import { ProxyModule } from './proxy/proxy.module'
 				{
 					name: 'short',
 					ttl: 1000, // 1 second
-					limit: envs.get('RATE_LIMIT_SHORT', 10), // requests per second
+					limit: envs.get('RATE_LIMIT_SHORT', 10), // RATE_LIMIT_SHORT or 10 requests per ttl time
 				},
 				{
 					name: 'medium',
 					ttl: 60000, // 1 minute
-					limit: envs.get('RATE_LIMIT_MEDIUM', 100), // requests per minute
+					limit: envs.get('RATE_LIMIT_MEDIUM', 100), // RATE_LIMIT_MEDIUM or 100 requests per ttl time
 				},
 				{
 					name: 'long',
 					ttl: 900000, // 15 minutes
-					limit: envs.get('RATE_LIMIT_LONG', 1000), // 1000 requests per 15 minutes
+					limit: envs.get('RATE_LIMIT_LONG', 1000), // RATE_LIMIT_LONG or 1000 requests per ttl time
 				},
 			],
 		}),
@@ -37,7 +39,13 @@ import { ProxyModule } from './proxy/proxy.module'
 		AuthModule,
 	],
 	controllers: [AppController],
-	providers: [AppService],
+	providers: [
+		AppService,
+		{
+			provide: APP_GUARD,
+			useClass: CustomThrottlerGuard,
+		},
+	],
 })
 export class AppModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {
