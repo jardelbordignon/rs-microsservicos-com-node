@@ -1,5 +1,4 @@
 import {
-	CanActivate,
 	ExecutionContext,
 	Injectable,
 	UnauthorizedException,
@@ -30,14 +29,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
 		if (isPublic) {
 			return true
-		}
-
-		const request = context.switchToHttp().getRequest()
-
-		const token = request.headers.authorization?.split(' ')[1]
-
-		if (!token) {
-			throw new UnauthorizedException('Required access token')
 		}
 
 		return super.canActivate(context)

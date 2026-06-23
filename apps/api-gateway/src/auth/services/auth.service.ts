@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt'
 import { firstValueFrom } from 'rxjs'
 import { serviceConfig } from 'src/config/gateway.config'
 
-type TUserSession = {
+export type TUserSession = {
 	valid: boolean
 	user: {
 		id: string
