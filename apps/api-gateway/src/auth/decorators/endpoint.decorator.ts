@@ -18,10 +18,12 @@ type EndpointOptions = {
 	type: keyof typeof methods
 
 	summary: string
+	description?: string
 
 	responses: {
 		status: HttpStatus
 		description: string
+		schema?: object
 	}[]
 
 	throttle?: {
@@ -32,23 +34,23 @@ type EndpointOptions = {
 }
 
 export function Endpoint(options: EndpointOptions) {
+	const { type, path, responses, throttle, summary, description } = options
+
 	return applyDecorators(
-		methods[options.type](options.path),
+		methods[type](path),
 
-		HttpCode(options.responses[0].status),
+		ApiOperation({ summary, description }),
 
-		ApiOperation({
-			summary: options.summary,
-		}),
+		HttpCode(responses[0].status),
 
-		...(options.responses ?? []).map((response) => ApiResponse(response)),
+		...(responses ?? []).map((response) => ApiResponse(response)),
 
-		...(options.throttle
+		...(throttle
 			? [
 					Throttle({
-						[options.throttle.name]: {
-							limit: options.throttle.limit,
-							ttl: options.throttle.ttl,
+						[throttle.name]: {
+							limit: throttle.limit,
+							ttl: throttle.ttl,
 						},
 					}),
 				]

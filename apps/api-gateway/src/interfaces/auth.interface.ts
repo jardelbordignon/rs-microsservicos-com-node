@@ -18,8 +18,10 @@ export interface IAuthDto {
 }
 
 export interface IAuthResponse {
-	accessToken: string
 	user: IUser
+	accessToken: string
+	sessionToken: string
+	expiresIin: number
 }
 
 export interface IRegisterDto extends IAuthDto {

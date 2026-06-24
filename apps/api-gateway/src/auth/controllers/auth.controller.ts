@@ -21,6 +21,7 @@ export class AuthController {
 		type: 'Post',
 		path: 'login',
 		summary: 'User login',
+		description: 'Authenticates the user and returns a JWT token and a session token',
 		responses: [
 			{
 				status: HttpStatus.OK,
@@ -45,14 +46,37 @@ export class AuthController {
 		type: 'Post',
 		path: 'register',
 		summary: 'User registration',
+		description: 'Creates a new user account on the system',
 		responses: [
 			{
 				status: HttpStatus.CREATED,
 				description: 'User registration',
+				schema: {
+					type: 'object',
+					properties: {
+						user: {
+							type: 'object',
+							properties: {
+								id: { type: 'string' },
+								email: { type: 'string' },
+								name: { type: 'string' },
+								role: { type: 'string', enum: ['admin', 'user', 'seller'] },
+								status: { type: 'string' },
+							},
+						},
+						accessToken: { type: 'string' },
+						sessionToken: { type: 'string' },
+						expiresIin: { type: 'number' },
+					},
+				},
 			},
 			{
 				status: HttpStatus.BAD_REQUEST,
 				description: 'Invalid registration data',
+			},
+			{
+				status: HttpStatus.CONFLICT,
+				description: 'Email already registered',
 			},
 		],
 	})
