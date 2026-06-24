@@ -44,7 +44,9 @@ export function appConfig(app: NestFastifyApplication) {
 
 	app.enableCors({
 		origin: (origin, callback) => {
-			if (!origin) return callback(null, true)
+			if (!origin) {
+				return callback(null, true)
+			}
 
 			const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || ['*']
 

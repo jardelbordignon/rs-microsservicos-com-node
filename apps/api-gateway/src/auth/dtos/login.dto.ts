@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator'
+import type { IAuthDto } from '@/interfaces/auth.interface'
 
-export class LoginDto {
+export class LoginDto implements IAuthDto {
 	@ApiProperty({
 		description: 'User email',
 		example: 'user@example.com',

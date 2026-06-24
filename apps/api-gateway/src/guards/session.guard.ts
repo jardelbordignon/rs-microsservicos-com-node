@@ -33,7 +33,7 @@ export class SessionGuard implements CanActivate {
 			request.user = session.user
 
 			return true
-		} catch (error) {
+		} catch {
 			throw new UnauthorizedException('Invalid session token')
 		}
 	}

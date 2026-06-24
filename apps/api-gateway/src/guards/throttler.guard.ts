@@ -4,15 +4,14 @@ import {
 	ThrottlerGuard,
 	type ThrottlerRequest,
 } from '@nestjs/throttler'
+import type { Request } from 'express'
 
 @Injectable()
 export class CustomThrottlerGuard extends ThrottlerGuard {
-	protected async getTracker(req: Record<string, any>): Promise<string> {
+	protected async getTracker(req: Request): Promise<string> {
 		const isExpress = typeof req.get === 'function'
 
-		const userAgent = isExpress
-			? req.get('User-Agent')
-			: req.headers['user-agent']
+		const userAgent = isExpress ? req.get('User-Agent') : req.headers['user-agent']
 
 		return `${req.ip}-${userAgent}`
 	}
@@ -28,7 +27,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
 		const throttlers = this.reflector.get('throttle', context.getHandler())
 		const throttlerName = throttlers ? Object.keys(throttlers)[0] : 'default'
 
-		const tracker = await this.getTracker(req)
+		const tracker = await this.getTracker(req as Request)
 		const key = this.generateKey(context, tracker, throttlerName)
 
 		const { totalHits } = await this.storageService.increment(
@@ -43,7 +42,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
 
 		const isExpress = typeof res.setHeader === 'function'
 
-		const setHeader = (name: string, value: any) =>
+		const setHeader = (name: string, value: unknown) =>
 			isExpress ? res.setHeader(name, value) : res.header(name, value)
 
 		if (totalHits > limit) {

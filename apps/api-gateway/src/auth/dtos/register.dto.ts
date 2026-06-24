@@ -1,14 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsOptional, IsString } from 'class-validator'
+import { ERole, type IRegisterDto } from '@/interfaces/auth.interface'
 import { LoginDto } from './login.dto'
 
-enum Role {
-  USER = 'user',
-  ADMIN = 'admin',
-  SELLER = 'seller',
-}
-
-export class RegisterDto extends LoginDto {
+export class RegisterDto extends LoginDto implements IRegisterDto {
 	@ApiProperty({
 		description: 'User name',
 		example: 'John Doe',
@@ -22,5 +17,5 @@ export class RegisterDto extends LoginDto {
 	})
 	@IsOptional()
 	@IsString()
-	role?: Role = Role.USER
+	role?: ERole = ERole.USER
 }

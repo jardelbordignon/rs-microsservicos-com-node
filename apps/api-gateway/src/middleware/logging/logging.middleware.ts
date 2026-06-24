@@ -1,4 +1,5 @@
 import { Injectable, Logger, NestMiddleware } from '@nestjs/common'
+import type { Request, Response } from 'express'
 
 @Injectable()
 export class LoggingMiddleware implements NestMiddleware {
@@ -6,16 +7,14 @@ export class LoggingMiddleware implements NestMiddleware {
 
 	//constructor(private readonly adapterHost: HttpAdapterHost) {}
 
-	use(req: any, res: any, next: () => void) {
+	use(req: Request, res: Response, next: () => void) {
 		const { method, originalUrl, ip } = req
 
 		// const isExpress =
 		//   this.adapterHost.httpAdapter.getType() === 'express'
 		const isExpress = typeof req.get === 'function'
 
-		const userAgent = isExpress
-			? req.get('User-Agent')
-			: req.headers['user-agent']
+		const userAgent = isExpress ? req.get('User-Agent') : req.headers['user-agent']
 		const startTime = Date.now()
 
 		this.logger.log(
@@ -41,9 +40,7 @@ export class LoggingMiddleware implements NestMiddleware {
 		})
 
 		res.on('error', (error) => {
-			this.logger.error(
-				`Response Error: ${method} ${originalUrl} - ${error.message}`,
-			)
+			this.logger.error(`Response Error: ${method} ${originalUrl} - ${error.message}`)
 		})
 
 		res.on('timeout', () => {

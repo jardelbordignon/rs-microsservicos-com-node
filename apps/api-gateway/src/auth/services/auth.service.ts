@@ -2,19 +2,14 @@ import { HttpService } from '@nestjs/axios'
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { firstValueFrom } from 'rxjs'
-import { serviceConfig } from 'src/config/gateway.config'
-
-export type TUserSession = {
-	valid: boolean
-	user: {
-		id: string
-		email: string
-		firstName: string
-		lastName: string
-		role: string
-		status: string
-	} | null
-}
+import { serviceConfig } from '@/config/gateway.config'
+import type {
+	IAuthDto,
+	IAuthResponse,
+	IRegisterDto,
+	IRegisterResponse,
+	IUserSession,
+} from '@/interfaces/auth.interface'
 
 @Injectable()
 export class AuthService {
@@ -23,29 +18,29 @@ export class AuthService {
 		private readonly httpService: HttpService,
 	) {}
 
-	validateJwtToken(token: string): Promise<any> {
+	validateJwtToken(token: string): Promise<IAuthResponse> {
 		try {
 			return this.jwtService.verify(token)
-		} catch (error) {
+		} catch {
 			throw new UnauthorizedException('Invalid JWT token')
 		}
 	}
 
-	async validateSessionToken(sessionToken: string): Promise<TUserSession> {
+	async validateSessionToken(sessionToken: string): Promise<IUserSession> {
 		try {
 			const { data } = await firstValueFrom(
-				this.httpService.get<TUserSession>(
+				this.httpService.get<IUserSession>(
 					`${serviceConfig.users.url}/sessions/validate/${sessionToken}`,
 					{ timeout: serviceConfig.users.timeout },
 				),
 			)
 			return data
-		} catch (error) {
+		} catch {
 			throw new UnauthorizedException('Invalid session token')
 		}
 	}
 
-	async login(dto: { email: string; password: string }) {
+	async login(dto: IAuthDto): Promise<IAuthResponse> {
 		try {
 			const { data } = await firstValueFrom(
 				this.httpService.post(`${serviceConfig.users.url}/login`, dto, {
@@ -53,12 +48,12 @@ export class AuthService {
 				}),
 			)
 			return data
-		} catch (error) {
+		} catch {
 			throw new UnauthorizedException('Invalid login credentials')
 		}
 	}
 
-	async register(dto: any) {
+	async register(dto: IRegisterDto): Promise<IRegisterResponse> {
 		try {
 			const { data } = await firstValueFrom(
 				this.httpService.post(`${serviceConfig.users.url}/auth/register`, dto, {
@@ -66,7 +61,7 @@ export class AuthService {
 				}),
 			)
 			return data
-		} catch (error) {
+		} catch {
 			throw new UnauthorizedException('Registration failed')
 		}
 	}

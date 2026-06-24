@@ -1,7 +1,8 @@
-import { HttpModuleAsyncOptions, HttpService } from '@nestjs/axios'
+import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import { firstValueFrom } from 'rxjs'
-import { serviceConfig } from 'src/config/gateway.config'
+import { serviceConfig } from '@/config/gateway.config'
+import { IUserInfo } from '@/interfaces/auth.interface'
 
 type TServiceName = keyof typeof serviceConfig
 
@@ -9,9 +10,16 @@ type TProxyRequestProps = {
 	serviceName: TServiceName
 	method: string
 	path: string
-	data?: any
-	headers?: any
-	userInfo?: any
+	data?: unknown
+	headers?: Record<string, string>
+	userInfo?: IUserInfo
+}
+
+type TProxyResponse = {
+	data: unknown
+	status: number
+	statusText: string
+	headers: Record<string, unknown>
 }
 
 @Injectable()
@@ -20,7 +28,7 @@ export class ProxyService {
 
 	constructor(private readonly httpService: HttpService) {}
 
-	async proxyRequest(props: TProxyRequestProps): Promise<any> {
+	async proxyRequest(props: TProxyRequestProps): Promise<TProxyResponse> {
 		const { data, serviceName, path, method, headers, userInfo } = props
 
 		const service = serviceConfig[serviceName]
@@ -48,9 +56,7 @@ export class ProxyService {
 
 			return response
 		} catch (error) {
-			this.logger.error(
-				`Error proxying ${method} request to ${serviceName}: ${url}`,
-			)
+			this.logger.error(`Error proxying ${method} request to ${serviceName}: ${url}`)
 			throw error
 		}
 	}
