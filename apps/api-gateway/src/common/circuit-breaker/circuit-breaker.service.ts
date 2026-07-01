@@ -58,7 +58,7 @@ export class CircuitBreakerService {
 		operation,
 		options = this.defaultOptions,
 	}: {
-		fallback?: () => Promise<T>
+		fallback?: () => T
 		key: string
 		operation: () => Promise<T>
 		options?: ICircuitBreakerOptions

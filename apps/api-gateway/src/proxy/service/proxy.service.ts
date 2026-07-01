@@ -2,6 +2,7 @@ import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import { firstValueFrom } from 'rxjs'
 import { CircuitBreakerService } from '@/common/circuit-breaker/circuit-breaker.service'
+import { FallbackService } from '@/common/fallback/fallback.service'
 import { serviceConfig } from '@/config/gateway.config'
 import type { IUserInfo } from '@/interfaces/auth.interface'
 
@@ -30,9 +31,12 @@ export class ProxyService {
 	constructor(
 		private readonly httpService: HttpService,
 		private readonly circuitBreakerService: CircuitBreakerService,
+		private readonly fallbackService: FallbackService,
 	) {}
 
-	async proxyRequest(props: TProxyRequestProps): Promise<TProxyResponse> {
+	async proxyRequest(
+		props: TProxyRequestProps,
+	): Promise<TProxyResponse | ReturnType<typeof this.createServiceFallback>> {
 		const { data, serviceName, path, method, headers, userInfo } = props
 
 		const service = serviceConfig[serviceName]
@@ -61,11 +65,13 @@ export class ProxyService {
 					}),
 				)
 
-				return response
+				if (method.toLowerCase() === 'get') {
+					this.fallbackService.setCachedData(`${serviceName}-${path}`, response.data)
+				}
+
+				return response.data
 			},
-			fallback: () => {
-				throw new Error(`${serviceName} service is temporarily unavailable`)
-			},
+			fallback: () => this.createServiceFallback(serviceName, method, path),
 		})
 	}
 
@@ -78,6 +84,34 @@ export class ProxyService {
 			return { status: 'healthy', data }
 		} catch (error) {
 			return { status: 'unhealthy', error: error.message }
+		}
+	}
+
+	private createServiceFallback(serviceName: string, method: string, path: string) {
+		switch (method.toLowerCase()) {
+			case 'users': {
+				const message = `${path.includes('/auth/login') ? 'Authentication' : 'User'} service unavailable`
+				return this.fallbackService.createErrorFallback('users', message)
+			}
+			case 'products':
+				if (method.toLowerCase() === 'get') {
+					return this.fallbackService.createCachedFallback(`products-${path}`, {
+						products: [],
+						total: 0,
+						limit: 10,
+					})
+				}
+				return this.fallbackService.createErrorFallback(
+					'products',
+					'Product service unavailable',
+				)
+			//case 'checkout':
+			//case 'payments':
+			default:
+				return this.fallbackService.createErrorFallback(
+					serviceName,
+					`${serviceName} service unavailable`,
+				)
 		}
 	}
 }
