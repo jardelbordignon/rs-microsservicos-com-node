@@ -5,6 +5,7 @@ import { ThrottlerModule } from '@nestjs/throttler'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { AuthModule } from './auth/auth.module'
+import { FallbackModule } from './common/fallback/fallback.module'
 import { CustomThrottlerGuard } from './guards/throttler.guard'
 import { LoggingMiddleware } from './middleware/logging/logging.middleware'
 import { MiddlewareModule } from './middleware/middleware.module'
@@ -37,6 +38,7 @@ import { ProxyModule } from './proxy/proxy.module'
 		ProxyModule,
 		MiddlewareModule,
 		AuthModule,
+		FallbackModule,
 	],
 	controllers: [AppController],
 	providers: [
