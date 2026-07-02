@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { EHealthStatus } from '@/common/health-check/health-check.interface'
 import { HealthCheckService } from '@/common/health-check/health-check.service'
 import { TServiceName } from '@/config/gateway.config'
 
@@ -8,7 +9,7 @@ export class HealthService {
 
 	getHealth() {
 		return {
-			status: 'ok',
+			status: EHealthStatus.HEALTHY,
 			timestamp: new Date().toISOString(),
 			uptime: process.uptime(),
 			memory: process.memoryUsage(),
@@ -57,11 +58,57 @@ export class HealthService {
 		return cached
 	}
 
-	async getReady() {
-		// 	return this.healthCheckService.get()
+	private async getHealthStatus() {
+		const healthChecks = await this.healthCheckService.checkAllServices()
+
+		const results = {
+			status: EHealthStatus.HEALTHY,
+			timestamp: new Date().toISOString(),
+			gateway: {
+				status: EHealthStatus.HEALTHY,
+				uptime: process.uptime(),
+				memory: process.memoryUsage(),
+			},
+			services: {},
+		}
+
+		let hasUnhealthyServices = false
+
+		healthChecks.forEach(({ lastCheck, name, responseTime, status, url, error }) => {
+			results.services[name] = {
+				status,
+				responseTime,
+				lastCheck,
+				url,
+				...(error && { error }),
+			}
+
+			if (status === EHealthStatus.UNHEALTHY) {
+				hasUnhealthyServices = true
+			}
+		})
+
+		if (hasUnhealthyServices) {
+			results.status = EHealthStatus.DEGRADED
+		}
+
+		return results
 	}
 
-	async getLive() {
-		//return this.healthCheckService.get()
+	async getReadyStatus() {
+		const healthStatus = await this.getHealthStatus()
+
+		return {
+			status: healthStatus.status === EHealthStatus.HEALTHY ? 'ready' : 'not_ready',
+			timestamp: new Date().toISOString(),
+		}
+	}
+
+	async getLiveStatus() {
+		return {
+			status: 'alive',
+			timestamp: new Date().toISOString(),
+			uptime: process.uptime(),
+		}
 	}
 }

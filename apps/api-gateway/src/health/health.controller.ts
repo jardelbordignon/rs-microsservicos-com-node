@@ -56,13 +56,13 @@ export class HealthController {
 	}
 
 	/**
-	 * Verifica se o container foi orquestrado e o Gateway está de prontidão, pronto para processar requisições http
+	 * Verifica se o container foi orquestrado e os serviços estão de prontidão, prontos para processar requisições http
 	 */
 	@Endpoint({
 		type: 'Get',
 		path: '/ready',
 		summary: 'Get the readiness status',
-		description: 'Get the readiness status of the gateway',
+		description: 'Get the readiness status of the services',
 		responses: [
 			{
 				status: HttpStatus.OK,
@@ -71,7 +71,7 @@ export class HealthController {
 		],
 	})
 	async getReady() {
-		return this.healthService.getReady()
+		return this.healthService.getReadyStatus()
 	}
 
 	/**
@@ -79,7 +79,8 @@ export class HealthController {
 	 * se o processo está respondendo
 	 * se não há deadlocks ou travamentos
 	 * se a aplicação não entrou em um estado irrecuperável
-	 * caso essa verificação falhe, o container será reiniciado
+	 * é uma verificação simples, sem considerar os serviços
+	 * caso essa verificação falhe, o container deverá ser reiniciado
 	 */
 	@Endpoint({
 		type: 'Get',
@@ -94,6 +95,6 @@ export class HealthController {
 		],
 	})
 	async getLive() {
-		return this.healthService.getLive()
+		return this.healthService.getLiveStatus()
 	}
 }

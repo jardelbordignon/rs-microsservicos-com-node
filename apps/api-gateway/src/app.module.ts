@@ -5,6 +5,7 @@ import { ThrottlerModule } from '@nestjs/throttler'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { AuthModule } from './auth/auth.module'
+import { CircuitBreakerModule } from './common/circuit-breaker/circuit-breaker.module'
 import { FallbackModule } from './common/fallback/fallback.module'
 import { HealthCheckModule } from './common/health-check/health-check.module'
 import { CustomThrottlerGuard } from './guards/throttler.guard'
@@ -43,6 +44,7 @@ import { ProxyModule } from './proxy/proxy.module'
 		FallbackModule,
 		HealthCheckModule,
 		HealthModule,
+		CircuitBreakerModule,
 	],
 	controllers: [AppController],
 	providers: [
