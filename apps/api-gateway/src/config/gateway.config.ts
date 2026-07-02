@@ -1,3 +1,5 @@
+export type TServiceName = keyof typeof serviceConfig
+
 export const serviceConfig = {
 	users: {
 		url: process.env.USERS_SERVICE_URL ?? '',

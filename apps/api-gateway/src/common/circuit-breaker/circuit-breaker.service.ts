@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common'
 import {
 	ECircuitBreakerState,
-	ICircuitBreaker,
-	ICircuitBreakerOptions,
+	type ICircuitBreaker,
+	type ICircuitBreakerOptions,
 } from './circuit-breaker.interface'
 
 @Injectable()
