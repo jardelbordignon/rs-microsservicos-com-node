@@ -1,6 +1,6 @@
 import { Body, Controller, HttpStatus } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
-import { Endpoint } from '../decorators/endpoint.decorator'
+import { Endpoint } from '@/utils/endpoint.decorator'
 import { LoginDto } from '../dtos/login.dto'
 import { RegisterDto } from '../dtos/register.dto'
 import { AuthService } from '../services/auth.service'
