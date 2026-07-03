@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { EHealthStatus } from '@/common/health-check/health-check.interface'
 import { HealthCheckService } from '@/common/health-check/health-check.service'
-import { TServiceName } from '@/config/gateway.config'
+import type { TServiceName } from '@/config/gateway.config'
 
 @Injectable()
 export class HealthService {
