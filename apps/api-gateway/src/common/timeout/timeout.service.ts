@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { createDelay } from '@/utils/functions'
 import type { ITimeoutOptions } from './timeout.interface'
 
 type TExecuteProps<T> = {
@@ -30,10 +31,6 @@ export class TimeoutService {
 		})
 	}
 
-	private async delay(ms: number) {
-		await new Promise((resolve) => setTimeout(resolve, ms))
-	}
-
 	/*
 	 * Execute an operation with timeout, retry and backoff strategy
 	 */
@@ -48,7 +45,7 @@ export class TimeoutService {
 		let delay = 1000 // start with 1 second
 
 		for (let attempt = 0; attempt <= retries; attempt++) {
-			const attemptInfo = `${attempt + 1}/${retries}`
+			const attemptInfo = `${attempt + 1} of ${retries}`
 
 			try {
 				this.logger.debug(`Executing operation ${attemptInfo}`)
@@ -68,7 +65,7 @@ export class TimeoutService {
 				this.logger.warn(`Attempt ${attemptInfo} failed: ${lastError.message}`)
 
 				if (attempt < retries) {
-					await this.delay(delay)
+					await createDelay(delay)
 					delay = Math.min(delay * backoffMultiplier, maxBackoff)
 				}
 			}
