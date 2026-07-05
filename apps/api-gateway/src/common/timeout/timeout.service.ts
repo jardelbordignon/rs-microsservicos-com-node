@@ -82,7 +82,7 @@ export class TimeoutService {
 	async executeWithOnlyTimeout<T>({
 		operation,
 		timeout,
-	}: TExecuteWithOnlyTimeoutProps<T>) {
+	}: TExecuteWithOnlyTimeoutProps<T>): Promise<T> {
 		return Promise.race([operation(), this.createTimeoutPromise(timeout)])
 	}
 }
