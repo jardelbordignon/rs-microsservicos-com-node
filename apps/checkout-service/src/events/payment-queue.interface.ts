@@ -4,6 +4,11 @@ interface IPaymentOrderItem {
 	price: number
 }
 
+interface IPaymentOrderMetadata {
+	service: string
+	timestamp: string
+}
+
 export interface IPaymentOrderMessage {
 	orderId: string
 	userId: string
@@ -12,4 +17,5 @@ export interface IPaymentOrderMessage {
 	paymentId: string
 	description?: string
 	createdAt?: Date
+	metadata?: IPaymentOrderMetadata
 }
