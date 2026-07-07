@@ -2,5 +2,6 @@
 	"recommendations": [
     "fronterior.biome-monorepo",
     "streetsidesoftware.code-spell-checker",
+    "ms-azuretools.vscode-docker",
 	]
 }
