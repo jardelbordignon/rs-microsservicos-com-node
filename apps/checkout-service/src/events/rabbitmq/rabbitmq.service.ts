@@ -77,4 +77,38 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
 	getConnection() {
 		return this.connection
 	}
+
+	async publishMessage(
+		exchange: string,
+		routingKey: string,
+		message: string,
+	): Promise<void> {
+		try {
+			if (!this.channel) {
+				this.logger.warn('⚠️ RabbitMQ channel not available, skipping message publish')
+				return
+			}
+
+			await this.channel.assertExchange(exchange, 'topic', { durable: true })
+			const messageBuffer = Buffer.from(JSON.stringify(message))
+
+			const published = this.channel.publish(exchange, routingKey, messageBuffer, {
+				persistent: true,
+				contentType: 'application/json',
+				timestamp: Date.now(),
+			})
+
+			if (!published) {
+				this.logger.warn('⚠️ Message publish failed, skipping message publish')
+				return
+			}
+
+			this.logger.log(
+				`✅ Message published successfully to ${exchange}:${routingKey}`,
+			)
+			this.logger.debug(`Message content: ${JSON.stringify(message)}`)
+		} catch (error) {
+			this.logger.error('❌ Error publishing message to RabbitMQ:', error)
+		}
+	}
 }
