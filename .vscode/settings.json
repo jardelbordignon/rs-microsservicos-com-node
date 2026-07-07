@@ -9,6 +9,6 @@
   },
 	"material-icon-theme.activeIconPack": "nest",
 
-	"cSpell.words": [],
+	"cSpell.words": ["amqp"],
 	"snyk.advanced.autoSelectOrganization": false
 }
