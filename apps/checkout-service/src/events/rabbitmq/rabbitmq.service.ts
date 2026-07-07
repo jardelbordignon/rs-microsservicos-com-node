@@ -111,4 +111,60 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
 			this.logger.error('❌ Error publishing message to RabbitMQ:', error)
 		}
 	}
+
+	async subscribeToQueue(
+		queueName: string,
+		exchange: string,
+		routingKey: string,
+		callback: (message: string) => Promise<void>,
+	): Promise<void> {
+		try {
+			if (!this.channel) {
+				this.logger.warn(
+					'⚠️ RabbitMQ channel not available, skipping message subscribe',
+				)
+				return
+			}
+
+			await this.channel.assertExchange(exchange, 'topic', { durable: true })
+
+			const { queue } = await this.channel.assertQueue(queueName, {
+				durable: true,
+				arguments: {
+					'x-message-ttl': 60000,
+					'x-max-length': 1000,
+				},
+			})
+
+			await this.channel.bindQueue(queue, exchange, routingKey)
+			await this.channel.prefetch(1)
+			await this.channel.consume(
+				queue,
+				async (msg) => {
+					if (msg) {
+						try {
+							const message = JSON.parse(msg.content.toString())
+							this.logger.log('📨 Received message from queue:', queueName)
+							this.logger.debug(`Message content: ${JSON.stringify(message)}`)
+							await callback(message)
+							this.channel.ack(msg)
+							this.logger.log(
+								`✅ Message processed successfully from queue: ${queueName}`,
+							)
+						} catch (error) {
+							this.logger.error(`❌ Error processing message:`, error)
+							this.channel.nack(msg, false, false) // TODO: Dead Letter Queue
+						}
+					}
+				},
+				{ noAck: true },
+			)
+
+			this.logger.log(
+				`✅ Subscribed to queue ${queueName} bound to exchange ${exchange} with routing key ${routingKey}`,
+			)
+		} catch (error) {
+			this.logger.error('❌ Error subscribing to RabbitMQ queue:', error)
+		}
+	}
 }
