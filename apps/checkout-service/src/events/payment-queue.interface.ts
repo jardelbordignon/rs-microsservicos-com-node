@@ -14,7 +14,7 @@ export interface IPaymentOrderMessage {
 	userId: string
 	amount: number
 	items: IPaymentOrderItem[]
-	paymentId: string
+	paymentMethod: string
 	description?: string
 	createdAt?: Date
 	metadata?: IPaymentOrderMetadata

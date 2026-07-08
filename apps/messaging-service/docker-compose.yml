@@ -3,7 +3,7 @@ name: messaging-service
 services:
   rabbitmq:
     container_name: messaging-service-rabbitmq
-    image: rabbitmq:3-management-alpine
+    image: rabbitmq:4-management-alpine
     environment:
       # Set default user and password for RabbitMQ
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER:-admin}
