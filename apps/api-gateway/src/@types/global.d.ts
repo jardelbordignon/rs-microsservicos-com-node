@@ -1,7 +1,7 @@
-import type { TUserSession } from '@/auth/services/auth.service'
+import type { IUser } from '@/interfaces/auth.interface'
 
 declare module 'fastify' {
 	interface FastifyRequest {
-		user: TUserSession['user']
+		user: IUser
 	}
 }
