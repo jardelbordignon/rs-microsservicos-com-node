@@ -138,27 +138,23 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
 
 			await this.channel.bindQueue(queue, exchange, routingKey)
 			await this.channel.prefetch(1)
-			await this.channel.consume(
-				queue,
-				async (msg) => {
-					if (msg) {
-						try {
-							const message = JSON.parse(msg.content.toString())
-							this.logger.log('📨 Received message from queue:', queueName)
-							this.logger.debug(`Message content: ${JSON.stringify(message)}`)
-							await callback(message)
-							this.channel.ack(msg)
-							this.logger.log(
-								`✅ Message processed successfully from queue: ${queueName}`,
-							)
-						} catch (error) {
-							this.logger.error(`❌ Error processing message:`, error)
-							this.channel.nack(msg, false, false) // TODO: Dead Letter Queue
-						}
+			await this.channel.consume(queue, async (msg) => {
+				if (msg) {
+					try {
+						const message = JSON.parse(msg.content.toString())
+						this.logger.log('📨 Received message from queue:', queueName)
+						this.logger.debug(`Message content: ${JSON.stringify(message)}`)
+						await callback(message)
+						this.channel.ack(msg)
+						this.logger.log(
+							`✅ Message processed successfully from queue: ${queueName}`,
+						)
+					} catch (error) {
+						this.logger.error(`❌ Error processing message:`, error)
+						this.channel.nack(msg, false, false) // TODO: Dead Letter Queue
 					}
-				},
-				{ noAck: true },
-			)
+				}
+			})
 
 			this.logger.log(
 				`✅ Subscribed to queue ${queueName} bound to exchange ${exchange} with routing key ${routingKey}`,
