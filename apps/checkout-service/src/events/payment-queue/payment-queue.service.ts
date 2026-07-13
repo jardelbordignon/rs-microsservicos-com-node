@@ -23,12 +23,10 @@ export class PaymentQueueService {
 				},
 			}
 
-			const paymentOrderMessageToString = JSON.stringify(enrichedPaymentOrderMessage)
-
 			await this.rabbitmqService.publishMessage(
 				this.EXCHANGE, // para onde enviar
 				this.ROUTING_KEY, // como rotear
-				paymentOrderMessageToString, // o que enviar,
+				enrichedPaymentOrderMessage, // o que enviar,
 			)
 
 			this.logger.log(`
@@ -38,7 +36,9 @@ export class PaymentQueueService {
 				userId: ${paymentOrderMessage.userId}
 				`)
 
-			this.logger.debug(`Payment order details: ${paymentOrderMessageToString}`)
+			this.logger.debug(
+				`Payment order details: ${JSON.stringify(enrichedPaymentOrderMessage)}`,
+			)
 		} catch (error) {
 			this.logger.error('❌ Error publishing payment order:', error)
 			throw error

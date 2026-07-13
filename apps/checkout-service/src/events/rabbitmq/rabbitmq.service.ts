@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { type Channel, type ChannelModel, connect } from 'amqplib'
+import { IPaymentOrderMessage } from '../payment-queue.interface'
 
 @Injectable()
 export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
@@ -81,7 +82,7 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
 	async publishMessage(
 		exchange: string,
 		routingKey: string,
-		message: string,
+		message: IPaymentOrderMessage,
 	): Promise<void> {
 		try {
 			if (!this.channel) {
