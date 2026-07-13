@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { type Channel, type ChannelModel, connect } from 'amqplib'
+import { createDelay } from '@/utils/functions'
 
 @Injectable()
 export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
@@ -21,6 +22,19 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
 
 	onModuleDestroy() {
 		this.disconnect()
+	}
+
+	async waitForConnection(maxAttempts = 10, delayMs = 500) {
+		for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+			if (this.channel) {
+				return true
+			}
+			this.logger.log(
+				`⌛ Waiting for RabbitMQ connection... (attempt ${attempt}/${maxAttempts})`,
+			)
+			await createDelay(delayMs)
+		}
+		return false
 	}
 
 	private async connect() {
