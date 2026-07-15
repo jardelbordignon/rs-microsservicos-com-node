@@ -56,8 +56,7 @@ export class PaymentConsumerService implements OnModuleInit {
 
 			// valida a mensagem antes de processar
 			if (!this.validateMessage(paymentOrderMessage)) {
-				this.logger.error('❌ Invalid payment message received')
-				return
+				throw new Error('Invalid payment message received')
 			}
 
 			this.logger.log(`✅ Payment order received and validated`)
@@ -66,7 +65,7 @@ export class PaymentConsumerService implements OnModuleInit {
 			const err = error as Error
 
 			this.logger.error(
-				`❌ Failed to process payment for order ${orderId}:`,
+				`❌ Failed to process payment for order ${orderId}: ${err.message}:`,
 				err.stack,
 			)
 

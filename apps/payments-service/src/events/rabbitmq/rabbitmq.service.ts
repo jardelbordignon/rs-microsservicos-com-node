@@ -156,10 +156,10 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
 				if (msg) {
 					try {
 						const message = JSON.parse(msg.content.toString())
-						this.logger.log('📨 Received message from queue:', queueName)
+						this.logger.log(`📨 Received message from queue: ${queueName}`)
 						this.logger.debug(`Message content: ${JSON.stringify(message)}`)
 						await callback(message)
-						this.channel.ack(msg)
+						this.channel.ack(msg) // retira a mensagem da fila, pois já foi processada com sucesso
 						this.logger.log(
 							`✅ Message processed successfully from queue: ${queueName}`,
 						)
