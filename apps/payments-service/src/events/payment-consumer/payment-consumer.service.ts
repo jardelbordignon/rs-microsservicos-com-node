@@ -87,7 +87,7 @@ export class PaymentConsumerService implements OnModuleInit {
 			return false
 		}
 
-		if (!amount) {
+		if (!amount || amount <= 0) {
 			this.logger.error('Invalid amount in payment message')
 			return false
 		}

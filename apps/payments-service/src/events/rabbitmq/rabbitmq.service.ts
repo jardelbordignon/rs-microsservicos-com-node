@@ -142,11 +142,26 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
 
 			await this.channel.assertExchange(exchange, 'topic', { durable: true })
 
+			const dlqExchange = `${exchange}.dlq`
+			const dlqName = `${queueName}.dlq`
+			const dlqRoutingKey = `${routingKey}.dlq`
+
+			await this.channel.assertExchange(dlqExchange, 'topic', { durable: true })
+			await this.channel.assertQueue(dlqName, {
+				durable: true,
+				arguments: {
+					'x-message-ttl': 604800000, // 7 dias para análise
+				},
+			})
+			await this.channel.bindQueue(dlqName, dlqExchange, dlqRoutingKey)
+
 			const { queue } = await this.channel.assertQueue(queueName, {
 				durable: true,
 				arguments: {
-					'x-message-ttl': 60000,
-					'x-max-length': 1000,
+					'x-message-ttl': 604800000,
+					'x-max-length': 10000,
+					'x-dead-letter-exchange': dlqExchange,
+					'x-dead-letter-routing-key': dlqRoutingKey,
 				},
 			})
 
@@ -165,7 +180,12 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
 						)
 					} catch (error) {
 						this.logger.error(`❌ Error processing message:`, error)
-						this.channel.nack(msg, false, false) // TODO: Dead Letter Queue
+						this.channel.nack(
+							msg,
+							false, // allUpTo? - mensagem em lote? nack de várias mensagens?
+							false, // requeue? - recolocar na fila principal?
+						)
+						this.logger.warn(`⚠️ Message sent to DLQ: ${dlqName}`)
 					}
 				}
 			})
