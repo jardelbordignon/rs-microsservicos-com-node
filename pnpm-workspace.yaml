@@ -3,4 +3,5 @@ packages:
   - "packages/*"
 allowBuilds:
   '@scarf/scarf': false
+  esbuild: set this to true or false
   unrs-resolver: set this to true or false

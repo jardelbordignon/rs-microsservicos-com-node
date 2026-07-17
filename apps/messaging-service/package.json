@@ -1,0 +1,11 @@
+{
+	"name": "messaging-service",
+	"version": "0.0.1",
+	"description": "",
+	"author": "",
+	"private": true,
+	"license": "UNLICENSED",
+	"scripts": {
+		"docker": "docker compose down && docker compose up -d"
+	}
+}
