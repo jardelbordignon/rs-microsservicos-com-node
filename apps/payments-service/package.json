@@ -16,6 +16,7 @@
 		"docker": "docker compose down && docker compose up -d"
 	},
 	"dependencies": {
+		"@repo/utils": "workspace:*",
 		"@nestjs/axios": "^4.0.1",
 		"@nestjs/common": "^11.0.1",
 		"@nestjs/config": "^4.0.4",

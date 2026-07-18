@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { createDelay } from '@/utils/functions'
+import { createDelay } from '@repo/utils'
 import type { ITimeoutOptions } from './timeout.interface'
 
 type TExecuteProps<T> = {

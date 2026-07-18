@@ -1,6 +1,6 @@
 import { Controller, HttpStatus, Param } from '@nestjs/common'
+import { Endpoint } from '@repo/utils'
 import type { TServiceName } from '@/config/gateway.config'
-import { Endpoint } from '@/utils/endpoint.decorator'
 import { HealthService } from './health.service'
 
 @Controller('health')

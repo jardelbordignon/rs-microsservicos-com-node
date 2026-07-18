@@ -1,0 +1,24 @@
+{
+	"name": "@repo/utils",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"scripts": {
+		"build": "tsup",
+		"clean": "rm -rf dist"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.0",
+		"@repo/biome-config": "workspace:^",
+		"@repo/typescript-config": "workspace:*",
+		"ts-node": "^10.9.2",
+		"tsup": "^8.5.1"
+	},
+	"peerDependencies": {
+		"@nestjs/common": "^11",
+		"@nestjs/swagger": "^11",
+		"@nestjs/throttler": "^6"
+	}
+}

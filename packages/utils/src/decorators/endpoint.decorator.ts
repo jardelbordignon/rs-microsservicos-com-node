@@ -41,7 +41,7 @@ export function Endpoint(options: EndpointOptions) {
 
 		ApiOperation({ summary, description }),
 
-		HttpCode(responses[0].status),
+		HttpCode(responses[0]?.status || 200),
 
 		...(responses ?? []).map((response) => ApiResponse(response)),
 

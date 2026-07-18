@@ -5,8 +5,8 @@ import {
 	type OnModuleInit,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import { createDelay } from '@repo/utils'
 import { type Channel, type ChannelModel, connect } from 'amqplib'
-import { createDelay } from '@/utils/functions'
 
 @Injectable()
 export class RabbitmqService implements OnModuleInit, OnModuleDestroy {

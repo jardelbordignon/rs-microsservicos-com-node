@@ -56,6 +56,9 @@ importers:
       '@nestjs/throttler':
         specifier: ^6.5.0
         version: 6.5.0(@nestjs/common@11.1.27(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.27)(reflect-metadata@0.2.2)
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@scalar/nestjs-api-reference':
         specifier: ^1.2.4
         version: 1.2.4
@@ -291,6 +294,9 @@ importers:
       '@nestjs/typeorm':
         specifier: ^11.0.3
         version: 11.0.3(@nestjs/common@11.1.27(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.27)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@1.0.0(pg@8.22.0)(ts-node@10.9.2(@types/node@24.13.2)(typescript@5.9.2)))
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       amqplib:
         specifier: ^2.0.1
         version: 2.0.1
@@ -388,16 +394,18 @@ importers:
 
   packages/biome-config: {}
 
-  packages/shared-functions:
+  packages/typescript-config: {}
+
+  packages/utils:
     dependencies:
       '@nestjs/common':
-        specifier: ^11.1.28
+        specifier: ^11
         version: 11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/swagger':
-        specifier: ^11.4.4
+        specifier: ^11
         version: 11.4.4(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.27)(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)
       '@nestjs/throttler':
-        specifier: ^6.5.0
+        specifier: ^6
         version: 6.5.0(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.27)(reflect-metadata@0.2.2)
     devDependencies:
       '@biomejs/biome':
@@ -415,8 +423,6 @@ importers:
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(typescript@5.9.2)
-
-  packages/typescript-config: {}
 
 packages:
 
