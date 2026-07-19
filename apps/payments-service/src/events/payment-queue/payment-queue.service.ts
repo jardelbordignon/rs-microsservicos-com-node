@@ -16,9 +16,11 @@ export class PaymentQueueService {
 		this.logger.log('📡 Setting up payment orders consumer...')
 
 		await this.rabbitmqService.subscribeToQueue(
-			this.QUEUE_NAME,
-			this.EXCHANGE,
-			this.ROUTING_KEY,
+			{
+				exchange: this.EXCHANGE,
+				queueName: this.QUEUE_NAME,
+				routingKey: this.ROUTING_KEY,
+			},
 			callback,
 		)
 

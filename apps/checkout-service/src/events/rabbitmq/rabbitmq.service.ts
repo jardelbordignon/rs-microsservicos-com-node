@@ -11,8 +11,8 @@ import { IPaymentOrderMessage } from '../payment-queue.interface'
 @Injectable()
 export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
 	private readonly logger = new Logger(RabbitmqService.name)
-	private connection: ChannelModel
-	private channel: Channel
+	private connection!: ChannelModel
+	private channel!: Channel
 
 	constructor(private readonly configService: ConfigService) {}
 
