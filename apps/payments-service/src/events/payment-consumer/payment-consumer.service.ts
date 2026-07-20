@@ -3,9 +3,44 @@ import { PaymentQueueService } from '../payment-queue/payment-queue.service'
 import { IPaymentOrderMessage } from '../payment-queue.interface'
 import { RabbitmqService } from '../rabbitmq/rabbitmq.service'
 
+export interface IConsumerMetrics {
+	totalProcessed: number // Total de mensagens processadas
+	totalSuccess: number // Mensagens processadas com sucesso
+	totalFailed: number // Mensagens que falharam
+	totalRetries: number // Total de tentativas do retry
+	lastProcessedAt: Date | null // Timestamp do último processamento
+	startedAt: Date // Quando o consumer iniciou
+	averageProcessingTime: number // Tempo médio de processamento em ms
+}
+
+const baseMetrics: IConsumerMetrics = {
+	averageProcessingTime: 0,
+	lastProcessedAt: null,
+	startedAt: new Date(),
+	totalFailed: 0,
+	totalProcessed: 0,
+	totalRetries: 0,
+	totalSuccess: 0,
+}
+
 @Injectable()
 export class PaymentConsumerService implements OnModuleInit {
 	private readonly logger = new Logger(PaymentConsumerService.name)
+
+	/**
+	 * ==========================
+	 * MÉTRICAS DE MONITORAMENTO
+	 * ==========================
+	 * Armazena estatísticas de processamento em memória (é um estudo, entedendo os conceitos)
+	 * Em produção, usaríamos Promethes, DataDog, etc.
+	 */
+	private metrics = baseMetrics
+
+	/**
+	 * Acumulador para calcular tempo médio de processamento
+	 * Guardamos a soma total para não precisar armazenar todos os tempos
+	 */
+	private totalProcessingTime = 0
 
 	constructor(
 		private readonly paymentQueueService: PaymentQueueService,
@@ -14,6 +49,7 @@ export class PaymentConsumerService implements OnModuleInit {
 
 	async onModuleInit() {
 		this.logger.log(`🚀 Starting Payment Consumer Service`)
+		this.metrics.startedAt = new Date()
 		await this.startConsuming()
 	}
 
@@ -49,6 +85,8 @@ export class PaymentConsumerService implements OnModuleInit {
 	private async processPaymentOrder(paymentOrderMessage: IPaymentOrderMessage) {
 		const { amount, orderId, userId } = paymentOrderMessage
 
+		const startTime = Date.now()
+
 		try {
 			this.logger.log(
 				`📝 Processing payment order: orderId=${orderId}, userId=${userId}, amount=${amount}`,
@@ -61,9 +99,11 @@ export class PaymentConsumerService implements OnModuleInit {
 
 			this.logger.log(`✅ Payment order received and validated`)
 			// TODO: Processar pagamento usando PaymentsService
+			this.updateMetrics(true, startTime)
 		} catch (error) {
-			const err = error as Error
+			this.updateMetrics(false, startTime)
 
+			const err = error as Error
 			this.logger.error(
 				`❌ Failed to process payment for order ${orderId}: ${err.message}:`,
 				err.stack,
@@ -103,5 +143,60 @@ export class PaymentConsumerService implements OnModuleInit {
 		}
 
 		return true
+	}
+
+	private updateMetrics(success: boolean, startTime: number) {
+		// Incrementa contadores
+		this.metrics.totalProcessed++
+		this.metrics.lastProcessedAt = new Date()
+
+		if (success) {
+			this.metrics.totalSuccess++
+		} else {
+			this.metrics.totalFailed++
+		}
+
+		// Atualiza tempo médio de processamento
+		const processingTime = Date.now() - startTime
+		this.totalProcessingTime += processingTime
+		this.metrics.averageProcessingTime = Math.round(
+			this.totalProcessingTime / this.metrics.totalProcessed,
+		)
+
+		// Log de métricas a cada 10 mensagens
+		if (this.metrics.totalProcessed % 10 === 0) {
+			this.logMetricsSummary()
+		}
+	}
+
+	incrementRetryCount() {
+		this.metrics.totalRetries++
+	}
+
+	private logMetricsSummary() {
+		const successRate =
+			this.metrics.totalProcessed > 0
+				? ((this.metrics.totalSuccess / this.metrics.totalProcessed) * 100).toFixed(2)
+				: '0'
+
+		this.logger.log(`📊 ==== CONSUMER METRICS ====`)
+		this.logger.log(`	Total Processed: ${this.metrics.totalProcessed}`)
+		this.logger.log(`	Success: ${this.metrics.totalSuccess}`)
+		this.logger.log(`	Failed: ${this.metrics.totalFailed}`)
+		this.logger.log(`	Retries: ${this.metrics.totalRetries}`)
+		this.logger.log(`	Success Rate: ${successRate}`)
+		this.logger.log(`	Avg Processing Time: ${this.metrics.averageProcessingTime}`)
+		this.logger.log(`📊 ==========================`)
+	}
+
+	getMetrics(): IConsumerMetrics {
+		// retorna uma cópia para evitar modificações externas
+		return { ...this.metrics }
+	}
+
+	resetMetrics() {
+		this.metrics = baseMetrics
+		this.totalProcessingTime = 0
+		this.logger.log('🔄 Metrics reset')
 	}
 }
