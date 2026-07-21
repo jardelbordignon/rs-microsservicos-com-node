@@ -14,13 +14,13 @@ import { Throttle } from '@nestjs/throttler'
 const methods = { Get, Post, Put, Patch, Delete } as const
 
 type EndpointOptions = {
-	path?: string
 	type: keyof typeof methods
+	path?: string
 
 	summary: string
 	description?: string
 
-	responses: {
+	responses?: {
 		status: HttpStatus
 		description: string
 		schema?: object
@@ -41,7 +41,7 @@ export function Endpoint(options: EndpointOptions) {
 
 		ApiOperation({ summary, description }),
 
-		HttpCode(responses[0]?.status || 200),
+		HttpCode(responses?.[0]?.status || 200),
 
 		...(responses ?? []).map((response) => ApiResponse(response)),
 
