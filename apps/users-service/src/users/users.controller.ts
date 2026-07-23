@@ -1,5 +1,6 @@
 import { Body, Controller, HttpStatus } from '@nestjs/common'
 import { Endpoint } from '@repo/utils'
+import { Public } from '../auth/decorators/public.decorator'
 import { LoginDto } from './dtos/login.dto'
 import { RegisterDto } from './dtos/register.dto'
 import { UsersService } from './users.service'
@@ -18,6 +19,7 @@ export class UsersController {
 			{ status: HttpStatus.CONFLICT, description: 'E-mail já cadastrado' },
 		],
 	})
+	@Public()
 	async register(@Body() registerDto: RegisterDto) {
 		return this.usersService.register(registerDto)
 	}
@@ -35,6 +37,7 @@ export class UsersController {
 			},
 		],
 	})
+	@Public()
 	async login(@Body() loginDto: LoginDto) {
 		return this.usersService.login(loginDto)
 	}
