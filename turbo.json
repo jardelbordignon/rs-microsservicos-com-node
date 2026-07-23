@@ -8,10 +8,14 @@
       "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", "dist/**"]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": ["^lint"],
+      "cache": false,
+      "persistent": false
     },
     "docker": {
-     
+      "dependsOn": ["^docker"],
+      "cache": false,
+      "persistent": false
     },
     "check-types": {
       "dependsOn": ["^check-types"]
