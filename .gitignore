@@ -44,3 +44,4 @@ apps/messaging-service/rabbitmq_data/
 apps/checkout-service/checkout_db_data/
 apps/payments-service/payments_db_data/
 apps/users-service/users_db_data/
+apps/products-service/products_db_data/
