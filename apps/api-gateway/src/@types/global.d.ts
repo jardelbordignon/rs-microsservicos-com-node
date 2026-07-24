@@ -1,7 +1,7 @@
-import type { IUser } from '@/interfaces/auth.interface'
+import type { IUserInfo } from '@/interfaces/auth.interface'
 
 declare module 'fastify' {
 	interface FastifyRequest {
-		user: IUser
+		user: IUserInfo
 	}
 }

@@ -4,12 +4,12 @@ import { APP_GUARD } from '@nestjs/core'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
-import { AuthModule } from './auth/auth.module'
 import { CircuitBreakerModule } from './common/circuit-breaker/circuit-breaker.module'
 import { FallbackModule } from './common/fallback/fallback.module'
 import { HealthCheckModule } from './common/health-check/health-check.module'
 import { RetryModule } from './common/retry/retry.module'
 import { TimeoutModule } from './common/timeout/timeout.module'
+import { DomainModule } from './domain/domain.module'
 import { CustomThrottlerGuard } from './guards/throttler.guard'
 import { HealthModule } from './health/health.module'
 import { LoggingMiddleware } from './middleware/logging/logging.middleware'
@@ -41,8 +41,8 @@ import { ProxyModule } from './proxy/proxy.module'
 			],
 		}),
 		ProxyModule,
+		DomainModule,
 		MiddlewareModule,
-		AuthModule,
 		FallbackModule,
 		HealthCheckModule,
 		HealthModule,

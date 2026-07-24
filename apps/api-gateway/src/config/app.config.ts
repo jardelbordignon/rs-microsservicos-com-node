@@ -159,8 +159,8 @@ export function appConfig(app: NestFastifyApplication) {
 						const clone = response.clone()
 						const body = await clone.json()
 
-						if (body?.accessToken) {
-							localStorage.setItem(TOKEN_KEY, body.accessToken)
+						if (body?.token) {
+							localStorage.setItem(TOKEN_KEY, body.token)
 						}
 					} catch (err) {
 						console.warn('Erro ao ler token do login:', err)

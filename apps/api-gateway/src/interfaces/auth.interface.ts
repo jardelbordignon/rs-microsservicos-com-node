@@ -1,15 +1,17 @@
 export enum ERole {
-	USER = 'user',
-	ADMIN = 'admin',
 	SELLER = 'seller',
+	BUYER = 'buyer',
 }
 
 export interface IUser {
 	id: string
 	email: string
-	name: string
+	firstName: string
+	lastName: string
 	role: ERole
 	status: string
+	createdAt: string
+	updatedAt: string
 }
 
 export interface IAuthDto {
@@ -19,22 +21,34 @@ export interface IAuthDto {
 
 export interface IAuthResponse {
 	user: IUser
-	accessToken: string
-	sessionToken: string
-	expiresIin: number
+	token: string
 }
 
 export interface IRegisterDto extends IAuthDto {
-	name: string
-	role?: ERole
+	firstName: string
+	lastName: string
+	role: ERole
 }
 
 export interface IRegisterResponse {
-	userId: string
+	id: string
+	email: string
+	firstName: string
+	lastName: string
+	role: ERole
+	status: string
+	createdAt: string
+	updatedAt: string
 }
 
-export interface IUserInfo extends Omit<IUser, 'id'> {
-	userId: string
+export interface IUserInfo {
+	id: string
+	email: string
+	role: ERole
+}
+
+export interface IRegisterGatewayResponse {
+	user: IRegisterResponse
 }
 
 export interface IUserSession {

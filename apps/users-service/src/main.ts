@@ -1,3 +1,5 @@
+import 'reflect-metadata'
+import 'dotenv/config'
 import { Logger } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify'
@@ -21,6 +23,7 @@ async function bootstrap() {
 
 		logger.log(`
  👤 Users Service running on: ${globalThis.baseUrl}
+ 📖 Swagger documentation on: ${globalThis.baseUrl}/doc
     `)
 	})
 }

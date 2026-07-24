@@ -52,7 +52,7 @@ export class ProxyService {
 		const finalOperation = async () => {
 			const enhancedHeaders = {
 				...headers,
-				'x-user-id': userInfo?.userId,
+				'x-user-id': userInfo?.id,
 				'x-user-email': userInfo?.email,
 				'x-user-role': userInfo?.role,
 			}

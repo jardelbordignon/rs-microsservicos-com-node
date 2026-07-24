@@ -5,7 +5,7 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 export const databaseConfig: TypeOrmModuleOptions = {
 	type: 'postgres',
 	host: process.env.DB_HOST || 'localhost',
-	port: Number(process.env.DB_PORT || '5431'),
+	port: Number(process.env.DB_PORT || '5435'),
 	username: process.env.DB_USER || 'postgres',
 	password: process.env.DB_PASS || 'postgres',
 	database: process.env.DB_NAME || 'users_db',

@@ -25,6 +25,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 		]
 
 		const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, targets)
+		console.log('isPublic', isPublic)
 
 		if (isPublic) {
 			return true

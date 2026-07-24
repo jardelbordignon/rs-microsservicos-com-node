@@ -5,11 +5,11 @@ import {
 	UnauthorizedException,
 } from '@nestjs/common'
 import type { FastifyRequest } from 'fastify'
-import { AuthService } from '../auth/services/auth.service'
+import { UsersService } from '@/domain/users/users.service'
 
 @Injectable()
 export class SessionGuard implements CanActivate {
-	constructor(private readonly authService: AuthService) {}
+	constructor(private readonly usersService: UsersService) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const request = context.switchToHttp().getRequest<FastifyRequest>()
@@ -24,7 +24,7 @@ export class SessionGuard implements CanActivate {
 		}
 
 		try {
-			const session = await this.authService.validateSessionToken(sessionToken)
+			const session = await this.usersService.validateSessionToken(sessionToken)
 
 			if (!session.valid || !session.user) {
 				throw new UnauthorizedException('Invalid session token')

@@ -1,12 +1,15 @@
 import {
 	Body,
 	Controller,
+        HttpCode,
 	HttpStatus,
 	Param,
 	ParseUUIDPipe,
 	Req,
 } from '@nestjs/common'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Endpoint } from '@repo/utils'
+import { UserRole } from './entities/user.entity'
 import { Public } from '../auth/decorators/public.decorator'
 import { LoginDto } from './dtos/login.dto'
 import { RegisterDto } from './dtos/register.dto'
@@ -20,6 +23,8 @@ type AuthenticatedRequest = {
 	}
 }
 
+@ApiTags('Users')
+@ApiBearerAuth('bearer')
 @Controller('users')
 export class UsersController {
 	constructor(private usersService: UsersService) {}
@@ -85,6 +90,29 @@ export class UsersController {
 	async getSellers() {
 		return this.usersService.getActiveSellers()
 	}
+
+        @Endpoint({
+                type: 'Get',
+                path: 'validate-token',
+                summary: 'Validar token JWT do usuário autenticado',
+                responses: [
+                        { status: HttpStatus.OK, description: 'Token validado com sucesso' },
+                        { status: HttpStatus.UNAUTHORIZED, description: 'Token ausente ou inválido' },
+                ],
+        })
+        @HttpCode(HttpStatus.OK)
+        async validateToken(
+                @Req()
+                req: {
+                        user: {
+                                id: string
+                                email: string
+                                role: UserRole
+                        }
+                },
+        ) {
+                return this.usersService.getValidatedUser(req.user)
+        }
 
 	@Endpoint({
 		type: 'Get',

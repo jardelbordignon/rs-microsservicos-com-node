@@ -13,6 +13,11 @@ import { RegisterDto } from './dtos/register.dto'
 import { User, UserRole, UserStatus } from './entities/user.entity'
 
 type UserResponse = Omit<User, 'password'>
+type TokenValidationResponse = {
+        userId: string
+        email: string
+        role: UserRole
+}
 
 @Injectable()
 export class UsersService {
@@ -114,6 +119,22 @@ export class UsersService {
 
 		return this.sanitizeUser(user)
 	}
+
+        getValidatedUser({
+                email,
+                id,
+                role,
+        }: {
+                id: string
+                email: string
+                role: UserRole
+        }): TokenValidationResponse {
+                return {
+                        userId: id,
+                        email,
+                        role,
+                }
+        }
 
 	private sanitizeUser(user: User): UserResponse {
 		const { password: _, ...userWithoutPassword } = user
