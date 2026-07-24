@@ -14,7 +14,7 @@ async function bootstrap() {
 
 	appConfig(app)
 
-	const port = Number(process.env.PORT || 4003)
+	const port = Number(process.env.PORT || 4002)
 
 	await app.listen(port, '0.0.0.0').then(async () => {
 		globalThis.baseUrl = await app.getUrl()
