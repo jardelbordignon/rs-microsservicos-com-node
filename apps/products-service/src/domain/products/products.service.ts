@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common'
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import type { IUserInfo } from '@/interfaces/auth.interface'
@@ -31,5 +31,32 @@ export class ProductsService {
 		})
 
 		return this.productsRepository.save(productData)
+	}
+
+	async findAllActive(): Promise<Product[]> {
+		return this.productsRepository.find({
+			where: { isActive: true },
+			order: { createdAt: 'DESC' },
+		})
+	}
+
+	async findActiveBySeller(sellerId: string): Promise<Product[]> {
+		return this.productsRepository.find({
+			where: {
+				sellerId,
+				isActive: true,
+			},
+			order: { createdAt: 'DESC' },
+		})
+	}
+
+	async findById(id: string): Promise<Product> {
+		const product = await this.productsRepository.findOneBy({ id })
+
+		if (!product) {
+			throw new NotFoundException('Produto não encontrado')
+		}
+
+		return product
 	}
 }
