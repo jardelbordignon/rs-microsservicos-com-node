@@ -23,6 +23,7 @@ async function bootstrap() {
 
 		logger.log(`
  🛒 Checkout Service running on: ${globalThis.baseUrl}
+ 📖 Swagger documentation on: ${globalThis.baseUrl}/doc
     `)
 	})
 }
