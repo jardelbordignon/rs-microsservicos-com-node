@@ -20,16 +20,20 @@ export class HealthService {
 	async getServicesHealth() {
 		const services = await this.healthCheckService.checkAllServices()
 
-		const healthy = services.filter((s) => s.status === 'healthy').length
-		const degraded = services.filter((s) => s.status === 'degraded').length
-		const unhealthy = services.filter((s) => s.status === 'unhealthy').length
+		const healthy = services.filter((s) => s.status === EHealthStatus.HEALTHY).length
+		const degraded = services.filter(
+			(s) => s.status === EHealthStatus.DEGRADED,
+		).length
+		const unhealthy = services.filter(
+			(s) => s.status === EHealthStatus.UNHEALTHY,
+		).length
 
 		const overallStatus =
 			healthy === services.length
-				? 'healthy'
+				? EHealthStatus.HEALTHY
 				: degraded > 0
-					? 'degraded'
-					: 'unhealthy'
+					? EHealthStatus.DEGRADED
+					: EHealthStatus.UNHEALTHY
 
 		return {
 			overallStatus,

@@ -1,7 +1,7 @@
 import {
 	Body,
 	Controller,
-        HttpCode,
+	HttpCode,
 	HttpStatus,
 	Param,
 	ParseUUIDPipe,
@@ -9,10 +9,10 @@ import {
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Endpoint } from '@repo/utils'
-import { UserRole } from './entities/user.entity'
 import { Public } from '../auth/decorators/public.decorator'
 import { LoginDto } from './dtos/login.dto'
 import { RegisterDto } from './dtos/register.dto'
+import { UserRole } from './entities/user.entity'
 import { UsersService } from './users.service'
 
 type AuthenticatedRequest = {
@@ -91,28 +91,28 @@ export class UsersController {
 		return this.usersService.getActiveSellers()
 	}
 
-        @Endpoint({
-                type: 'Get',
-                path: 'validate-token',
-                summary: 'Validar token JWT do usuário autenticado',
-                responses: [
-                        { status: HttpStatus.OK, description: 'Token validado com sucesso' },
-                        { status: HttpStatus.UNAUTHORIZED, description: 'Token ausente ou inválido' },
-                ],
-        })
-        @HttpCode(HttpStatus.OK)
-        async validateToken(
-                @Req()
-                req: {
-                        user: {
-                                id: string
-                                email: string
-                                role: UserRole
-                        }
-                },
-        ) {
-                return this.usersService.getValidatedUser(req.user)
-        }
+	@Endpoint({
+		type: 'Get',
+		path: 'validate-token',
+		summary: 'Validar token JWT do usuário autenticado',
+		responses: [
+			{ status: HttpStatus.OK, description: 'Token validado com sucesso' },
+			{ status: HttpStatus.UNAUTHORIZED, description: 'Token ausente ou inválido' },
+		],
+	})
+	@HttpCode(HttpStatus.OK)
+	async validateToken(
+		@Req()
+		req: {
+			user: {
+				id: string
+				email: string
+				role: UserRole
+			}
+		},
+	) {
+		return this.usersService.getValidatedUser(req.user)
+	}
 
 	@Endpoint({
 		type: 'Get',
