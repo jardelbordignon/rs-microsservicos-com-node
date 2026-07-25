@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module'
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard'
 import { databaseConfig } from './config/database.config'
 import { DomainModule } from './domain/domain.module'
+import { HealthModule } from './health/health.module'
 
 @Module({
 	imports: [
@@ -13,6 +14,7 @@ import { DomainModule } from './domain/domain.module'
 		TypeOrmModule.forRoot(databaseConfig),
 		AuthModule,
 		DomainModule,
+		HealthModule,
 	],
 	controllers: [],
 	providers: [

@@ -22,6 +22,7 @@ async function bootstrap() {
 		const baseUrl = await app.getUrl()
 
 		logger.log(`📦 Products Service running on: ${baseUrl}`)
+		logger.log(`📖 Swagger documentation on: ${baseUrl}/doc`)
 	})
 }
 bootstrap()

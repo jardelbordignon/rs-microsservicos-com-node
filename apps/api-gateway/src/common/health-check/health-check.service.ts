@@ -64,7 +64,9 @@ export class HealthCheckService {
 	async checkAllServices(): Promise<IHealthCheck[]> {
 		const serviceNames = Object.keys(serviceConfig) as TServiceName[]
 
-		const healthChecks = await Promise.allSettled(serviceNames.map(this.checkService))
+		const healthChecks = await Promise.allSettled(
+			serviceNames.map(async (serviceName) => await this.checkService(serviceName)),
+		)
 
 		return healthChecks.map((result, index) => {
 			if (result.status === 'fulfilled') {

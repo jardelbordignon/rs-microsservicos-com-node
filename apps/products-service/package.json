@@ -25,6 +25,7 @@
 		"@nestjs/throttler": "^6.5.0",
 		"@nestjs/typeorm": "^11.0.3",
 		"@repo/utils": "workspace:*",
+		"@scalar/nestjs-api-reference": "^1.2.4",
 		"class-transformer": "^0.5.1",
 		"class-validator": "^0.15.1",
 		"passport": "^0.7.0",

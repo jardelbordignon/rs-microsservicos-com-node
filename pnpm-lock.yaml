@@ -424,6 +424,9 @@ importers:
       '@repo/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@scalar/nestjs-api-reference':
+        specifier: ^1.2.4
+        version: 1.2.4
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
