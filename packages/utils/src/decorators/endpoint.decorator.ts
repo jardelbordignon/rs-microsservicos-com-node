@@ -7,8 +7,9 @@ import {
 	Patch,
 	Post,
 	Put,
+	Type,
 } from '@nestjs/common'
-import { ApiOperation, ApiResponse } from '@nestjs/swagger'
+import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { Throttle } from '@nestjs/throttler'
 
 const methods = { Get, Post, Put, Patch, Delete } as const
@@ -16,6 +17,7 @@ const methods = { Get, Post, Put, Patch, Delete } as const
 type EndpointOptions = {
 	type: keyof typeof methods
 	path?: string
+	body?: string | Function | Type<unknown> | [Function]
 
 	summary: string
 	description?: string
@@ -34,10 +36,11 @@ type EndpointOptions = {
 }
 
 export function Endpoint(options: EndpointOptions) {
-	const { type, path, responses, throttle, summary, description } = options
+	const { type, path, body, responses, throttle, summary, description } = options
 
 	return applyDecorators(
 		methods[type](path),
+		...(body ? [ApiBody({ type: body })] : []),
 
 		ApiOperation({ summary, description }),
 
