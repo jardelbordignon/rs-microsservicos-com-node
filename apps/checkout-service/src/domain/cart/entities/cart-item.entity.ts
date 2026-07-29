@@ -32,12 +32,8 @@ export class CartItem {
 	@Column({ type: 'varchar', length: 255 })
 	productName: string
 
-	@Column({
-		type: 'decimal',
-		precision: 10,
-		scale: 2,
-	})
-	price: string
+	@Column({	type: 'int'	})
+	price: number
 
 	@Column({
 		type: 'int',
@@ -46,11 +42,9 @@ export class CartItem {
 	quantity: number
 
 	@Column({
-		type: 'decimal',
-		precision: 10,
-		scale: 2,
+		type: 'int',
 	})
-	subtotal: string
+	subtotal: number
 
 	@CreateDateColumn()
 	createdAt: Date

@@ -24,13 +24,8 @@ export class Cart {
 	})
 	status: ECartStatus
 
-	@Column({
-		type: 'decimal',
-		precision: 10,
-		scale: 2,
-		default: 0,
-	})
-	amount: string
+	@Column({ type: 'int', default: 0 })
+	amount: number
 
 	@OneToMany(
 		() => CartItem,

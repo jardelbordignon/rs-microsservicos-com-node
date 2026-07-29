@@ -16,6 +16,101 @@ O objetivo desta entrega é preparar o `checkout-service` para as próximas spec
 
 ---
 
+## Fluxos de dados visuais
+
+### Fluxo visual da autenticação JWT
+
+```text
+Client
+  -> envia JWT
+checkout-service
+  -> valida assinatura com JWT_SECRET compartilhado
+  -> interpreta payload { sub, email, role }
+  -> expõe req.user para os endpoints protegidos
+```
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Checkout as checkout-service
+    participant Users as users-service
+
+    Users->>Client: emite JWT
+    Client->>Checkout: envia requisicao com JWT
+    Checkout->>Checkout: valida assinatura com JWT_SECRET
+    Checkout->>Checkout: interpreta payload { sub, email, role }
+    Checkout-->>Client: libera acesso a rota protegida
+```
+
+### Fluxo visual do health check
+
+```text
+Client / Infra / Gateway
+  -> GET /health
+checkout-service
+  -> responde { status: "ok", service: "checkout-service" }
+```
+
+```mermaid
+sequenceDiagram
+    participant Client as Client/Infra/Gateway
+    participant Checkout as checkout-service
+
+    Client->>Checkout: GET /health
+    Checkout-->>Client: { status: "ok", service: "checkout-service" }
+```
+
+### Fluxo visual da persistência inicial
+
+```text
+checkout-service
+  -> TypeORM
+  -> PostgreSQL
+     -> tabela carts
+     -> tabela cart_items
+     -> tabela orders
+```
+
+```mermaid
+sequenceDiagram
+    participant Checkout as checkout-service
+    participant ORM as TypeORM
+    participant DB as PostgreSQL
+
+    Checkout->>ORM: registra entidades Cart, CartItem e Order
+    ORM->>DB: sincroniza schema
+    DB-->>ORM: cria/atualiza carts
+    DB-->>ORM: cria/atualiza cart_items
+    DB-->>ORM: cria/atualiza orders
+    ORM-->>Checkout: entidades persistidas
+```
+
+### Fluxo visual entre serviços
+
+```text
+users-service
+  -> emite JWT
+Client
+  -> envia JWT para checkout-service
+checkout-service
+  -> valida token emitido pelo users-service
+  -> permite acesso a rotas protegidas
+```
+
+```mermaid
+sequenceDiagram
+    participant Users as users-service
+    participant Client
+    participant Checkout as checkout-service
+
+    Users-->>Client: JWT assinado
+    Client->>Checkout: requisicao autenticada
+    Checkout->>Checkout: valida JWT emitido pelo users-service
+    Checkout-->>Client: acesso autorizado
+```
+
+---
+
 ## 1. Requisitos funcionais
 
 ### 1.1 Persistência de domínio
