@@ -11,5 +11,6 @@ import { ProductsClientService } from './products-client.service'
 	imports: [TypeOrmModule.forFeature([Cart, CartItem]), HttpModule],
 	controllers: [CartController],
 	providers: [CartService, ProductsClientService],
+	exports: [CartService],
 })
 export class CartModule {}

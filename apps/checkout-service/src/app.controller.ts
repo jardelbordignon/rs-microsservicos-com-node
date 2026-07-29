@@ -25,7 +25,7 @@ export class AppController {
 	})
 	async sendMessage(@Body() body: Partial<IPaymentOrderMessage> = {}) {
 		const paymentOrderMessage: IPaymentOrderMessage = {
-			amount: body.amount ?? 19.99,
+			amount: body.amount ?? "19.99",
 			orderId: body.orderId ?? `test-order-${Date.now()}`,
 			userId: body.userId ?? 'test-user-123',
 			items: body.items ?? [

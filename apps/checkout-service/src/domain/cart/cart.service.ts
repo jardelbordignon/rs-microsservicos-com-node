@@ -35,15 +35,6 @@ export class CartService {
 		}
 	}
 
-	private async findActiveCart(userId: string) {
-		return this.cartRepository.findOne({
-			where: {
-				userId,
-				status: ECartStatus.ACTIVE,
-			},
-		})
-	}
-
 	private async getOrCreateCart(user: IUserInfo): Promise<Cart> {
 		let cart = await this.findActiveCart(user.id)
 
@@ -58,6 +49,19 @@ export class CartService {
 		}
 
 		return cart
+	}
+
+	async changeCartStatus(userId: string, status: ECartStatus) {
+		await this.cartRepository.update({ userId }, { status })
+	}
+
+	async findActiveCart(userId: string) {
+		return this.cartRepository.findOne({
+			where: {
+				userId,
+				status: ECartStatus.ACTIVE,
+			},
+		})
 	}
 
 	async getCart(user: IUserInfo): Promise<Cart> {
