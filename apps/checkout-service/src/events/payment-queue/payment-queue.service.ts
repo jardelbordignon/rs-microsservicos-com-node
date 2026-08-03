@@ -41,7 +41,6 @@ export class PaymentQueueService {
 			)
 		} catch (error) {
 			this.logger.error('❌ Error publishing payment order:', error)
-			throw error
 		}
 	}
 

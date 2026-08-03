@@ -10,6 +10,7 @@ import type { CartItem } from '@/domain/cart/entities/cart-item.entity'
 import { ECartStatus } from '@/domain/cart/enums/cart-status.enum'
 import { PaymentQueueService } from '@/events/payment-queue/payment-queue.service'
 import type { IPaymentOrderMessage } from '@/events/payment-queue.interface'
+import type { IPaymentProcessingResultEvent } from '@/events/payment-result/payment-result.interface'
 import type { IUserInfo } from '@/interfaces/auth.interface'
 import { Order } from './entities/order.entity'
 import { EOrderStatus } from './enums/order-status.enum'
@@ -78,5 +79,33 @@ export class OrdersService {
 		}
 
 		return order
+	}
+
+	async applyPaymentResult(event: IPaymentProcessingResultEvent): Promise<Order> {
+		const order = await this.orderRepository.findOne({
+			where: { id: event.orderId },
+		})
+
+		if (!order) {
+			throw new NotFoundException('Pedido nao encontrado')
+		}
+
+		const targetStatus =
+			event.status === 'approved'
+				? EOrderStatus.APPROVED
+				: EOrderStatus.PAYMENT_REJECTED
+
+		if (order.status === targetStatus) {
+			return order
+		}
+
+		if (order.status !== EOrderStatus.PENDING) {
+			throw new UnprocessableEntityException(
+				`Nao foi possivel atualizar status do pedido ${order.id} a partir de ${order.status}`,
+			)
+		}
+
+		order.status = targetStatus
+		return this.orderRepository.save(order)
 	}
 }

@@ -54,6 +54,13 @@ export class Payment {
 	})
 	processingToken: string | null
 
+	@Column({
+		type: 'timestamp',
+		nullable: true,
+		name: 'result_event_published_at',
+	})
+	resultEventPublishedAt: Date | null
+
 	@CreateDateColumn({ type: 'timestamp', name: 'created_at' })
 	createdAt: Date
 

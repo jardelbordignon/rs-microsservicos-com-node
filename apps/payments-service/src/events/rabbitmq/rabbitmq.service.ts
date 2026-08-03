@@ -119,16 +119,17 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
 	async publishMessage(
 		exchange: string,
 		routingKey: string,
-		message: string,
+		message: unknown,
 	): Promise<void> {
 		try {
 			if (!this.channel) {
-				this.logger.warn('⚠️ RabbitMQ channel not available, skipping message publish')
-				return
+				throw new Error('RabbitMQ channel not available')
 			}
 
 			await this.channel.assertExchange(exchange, 'topic', { durable: true })
-			const messageBuffer = Buffer.from(JSON.stringify(message))
+			const payload =
+				typeof message === 'string' ? message : JSON.stringify(message)
+			const messageBuffer = Buffer.from(payload)
 
 			const published = this.channel.publish(exchange, routingKey, messageBuffer, {
 				persistent: true,
@@ -137,8 +138,7 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
 			})
 
 			if (!published) {
-				this.logger.warn('⚠️ Message publish failed, skipping message publish')
-				return
+				throw new Error('Message publish failed')
 			}
 
 			this.logger.log(
@@ -147,6 +147,7 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
 			this.logger.debug(`Message content: ${JSON.stringify(message)}`)
 		} catch (error) {
 			this.logger.error('❌ Error publishing message to RabbitMQ:', error)
+			throw error
 		}
 	}
 

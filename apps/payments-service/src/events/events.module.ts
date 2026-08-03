@@ -7,6 +7,7 @@ import { MetricsController } from './metrics/metrics.controller'
 import { MetricsService } from './metrics/metrics.service'
 import { PaymentConsumerService } from './payment-consumer/payment-consumer.service'
 import { PaymentQueueService } from './payment-queue/payment-queue.service'
+import { PaymentResultPublisher } from './payment-result/payment-result.publisher'
 import { RabbitmqService } from './rabbitmq/rabbitmq.service'
 
 @Module({
@@ -16,6 +17,7 @@ import { RabbitmqService } from './rabbitmq/rabbitmq.service'
 		RabbitmqService,
 		PaymentQueueService,
 		PaymentConsumerService,
+		PaymentResultPublisher,
 		DlqService,
 		MetricsService,
 	],

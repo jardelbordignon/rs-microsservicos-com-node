@@ -150,4 +150,21 @@ export class PaymentsService {
 
 		return payment
 	}
+
+	async tryMarkResultEventPublished(paymentId: string): Promise<boolean> {
+		const result = await this.paymentRepository
+			.createQueryBuilder()
+			.update(Payment)
+			.set({
+				resultEventPublishedAt: () => 'CURRENT_TIMESTAMP',
+			})
+			.where('id = :id', { id: paymentId })
+			.andWhere('result_event_published_at IS NULL')
+			.andWhere('status IN (:...statuses)', {
+				statuses: [EPaymentStatus.APPROVED, EPaymentStatus.REJECTED],
+			})
+			.execute()
+
+		return result.affected === 1
+	}
 }

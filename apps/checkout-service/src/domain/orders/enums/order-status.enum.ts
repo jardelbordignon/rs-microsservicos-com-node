@@ -3,4 +3,6 @@ export enum EOrderStatus {
 	PAID = 'paid',
 	FAILED = 'failed',
 	CANCELLED = 'cancelled',
+	APPROVED = 'approved',
+	PAYMENT_REJECTED = 'payment_rejected',
 }

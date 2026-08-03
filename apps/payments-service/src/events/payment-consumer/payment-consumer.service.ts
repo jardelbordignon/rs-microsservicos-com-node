@@ -1,9 +1,12 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { PaymentsService } from '@/domain/payments/payments.service'
+import { EPaymentStatus } from '@/domain/payments/enums/payment-status.enum'
 import { MetricsService } from '../metrics/metrics.service'
 import { PaymentQueueService } from '../payment-queue/payment-queue.service'
 import { IPaymentOrderMessage } from '../payment-queue.interface'
+import { PaymentResultPublisher } from '../payment-result/payment-result.publisher'
 import { RabbitmqService } from '../rabbitmq/rabbitmq.service'
+import type { IPaymentProcessingResultEvent } from '../payment-result/payment-result.interface'
 
 @Injectable()
 export class PaymentConsumerService implements OnModuleInit {
@@ -14,6 +17,7 @@ export class PaymentConsumerService implements OnModuleInit {
 		private readonly rabbitmqService: RabbitmqService,
 		private readonly metricsService: MetricsService,
 		private readonly paymentsService: PaymentsService,
+		private readonly paymentResultPublisher: PaymentResultPublisher,
 	) {}
 
 	async onModuleInit() {
@@ -58,7 +62,8 @@ export class PaymentConsumerService implements OnModuleInit {
 				throw new Error('Invalid payment message received')
 			}
 
-			await this.paymentsService.processPayment(paymentOrderMessage)
+			const payment = await this.paymentsService.processPayment(paymentOrderMessage)
+			await this.publishResultEventIfNeeded(payment)
 			this.metricsService.updateMetrics(true, startTime)
 		} catch (error) {
 			this.metricsService.updateMetrics(false, startTime)
@@ -105,5 +110,39 @@ export class PaymentConsumerService implements OnModuleInit {
 		}
 
 		return true
+	}
+
+	private async publishResultEventIfNeeded(payment: {
+		id: string
+		orderId: string
+		status: EPaymentStatus
+		transactionId: string | null
+		rejectionReason: string | null
+		processedAt: Date | null
+		resultEventPublishedAt: Date | null
+	}) {
+		if (payment.status === EPaymentStatus.PENDING) {
+			return
+		}
+
+		if (!payment.processedAt) {
+			return
+		}
+
+		if (payment.resultEventPublishedAt) {
+			return
+		}
+
+		const event: IPaymentProcessingResultEvent = {
+			orderId: payment.orderId,
+			paymentId: payment.id,
+			status: payment.status,
+			processedAt: payment.processedAt.toISOString(),
+			...(payment.transactionId ? { transactionId: payment.transactionId } : {}),
+			...(payment.rejectionReason ? { rejectionReason: payment.rejectionReason } : {}),
+		}
+
+		await this.paymentResultPublisher.publish(event)
+		await this.paymentsService.tryMarkResultEventPublished(payment.id)
 	}
 }
