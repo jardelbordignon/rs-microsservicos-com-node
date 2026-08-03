@@ -12,7 +12,7 @@ interface IPaymentOrderMetadata {
 export interface IPaymentOrderMessage {
 	orderId: string
 	userId: string
-	amount: number
+	amount: string | number
 	items: IPaymentOrderItem[]
 	paymentMethod: string
 	description?: string

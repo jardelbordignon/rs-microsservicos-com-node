@@ -92,7 +92,7 @@ export class CartService {
 			)
 		}
 
-		const productPriceInCents = Math.round(product.price * 100)
+		const productPriceInCents = Math.abs(product.price * 100)
 		const cart = await this.getOrCreateCart(user)
 		const item = cart.items.find(({ productId }) => productId === dto.productId)
 

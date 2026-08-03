@@ -31,7 +31,7 @@ export class OrdersService {
 			throw new UnprocessableEntityException('Carrinho ativo vazio ou inexistente')
 		}
 
-		const orderAmount = Math.round(cart.amount / 100).toFixed(2)
+		const orderAmount = Math.abs(cart.amount / 100).toFixed(2)
 
 		const order: Order = this.orderRepository.create({
 			userId: user.id,

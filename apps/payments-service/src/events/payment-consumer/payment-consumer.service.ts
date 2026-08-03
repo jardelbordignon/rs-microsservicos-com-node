@@ -1,4 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { PaymentsService } from '@/domain/payments/payments.service'
 import { MetricsService } from '../metrics/metrics.service'
 import { PaymentQueueService } from '../payment-queue/payment-queue.service'
 import { IPaymentOrderMessage } from '../payment-queue.interface'
@@ -12,6 +13,7 @@ export class PaymentConsumerService implements OnModuleInit {
 		private readonly paymentQueueService: PaymentQueueService,
 		private readonly rabbitmqService: RabbitmqService,
 		private readonly metricsService: MetricsService,
+		private readonly paymentsService: PaymentsService,
 	) {}
 
 	async onModuleInit() {
@@ -49,29 +51,21 @@ export class PaymentConsumerService implements OnModuleInit {
 	 * deve ser idempotente para evitar processamentos duplicados
 	 */
 	private async processPaymentOrder(paymentOrderMessage: IPaymentOrderMessage) {
-		const { amount, orderId, userId } = paymentOrderMessage
-
 		const startTime = Date.now()
 
 		try {
-			this.logger.log(
-				`📝 Processing payment order: orderId=${orderId}, userId=${userId}, amount=${amount}`,
-			)
-
-			// valida a mensagem antes de processar
 			if (!this.validateMessage(paymentOrderMessage)) {
 				throw new Error('Invalid payment message received')
 			}
 
-			this.logger.log(`✅ Payment order received and validated`)
-			// TODO: Processar pagamento usando PaymentsService
+			await this.paymentsService.processPayment(paymentOrderMessage)
 			this.metricsService.updateMetrics(true, startTime)
 		} catch (error) {
 			this.metricsService.updateMetrics(false, startTime)
 
 			const err = error as Error
 			this.logger.error(
-				`❌ Failed to process payment for order ${orderId}: ${err.message}:`,
+				`❌ Failed to process payment for order ${paymentOrderMessage.orderId}: ${err.message}:`,
 				err.stack,
 			)
 
@@ -93,7 +87,9 @@ export class PaymentConsumerService implements OnModuleInit {
 			return false
 		}
 
-		if (!amount || amount <= 0) {
+		const parsedAmount = typeof amount === 'number' ? amount : Number(amount)
+
+		if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
 			this.logger.error('Invalid amount in payment message')
 			return false
 		}
