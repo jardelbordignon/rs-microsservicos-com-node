@@ -1,7 +1,11 @@
 import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import { firstValueFrom, timeout as rxjsTimeout } from 'rxjs'
-import { serviceConfig, type TServiceName } from '@/config/gateway.config'
+import {
+	getServiceConfig,
+	serviceNames,
+	type TServiceName,
+} from '@/config/gateway.config'
 import { CircuitBreakerService } from '../circuit-breaker/circuit-breaker.service'
 import { EHealthStatus, type IHealthCheck } from './health-check.interface'
 
@@ -17,9 +21,13 @@ export class HealthCheckService {
 
 	async checkService(serviceName: TServiceName): Promise<IHealthCheck> {
 		const startTime = Date.now()
-		const { timeout, url } = serviceConfig[serviceName]
+		const { timeout, url } = getServiceConfig()[serviceName]
 
 		try {
+			if (!url) {
+				throw new Error(`Service URL not configured for ${serviceName}`)
+			}
+
 			await this.circuitBreakerService.execute({
 				operation: async () => {
 					const { status } = await firstValueFrom(
@@ -28,9 +36,6 @@ export class HealthCheckService {
 							.pipe(rxjsTimeout(timeout)),
 					)
 					return status
-				},
-				fallback: () => {
-					throw new Error('Circuit breaker fallback')
 				},
 				key: `health-${serviceName}`,
 			})
@@ -62,7 +67,7 @@ export class HealthCheckService {
 	}
 
 	async checkAllServices(): Promise<IHealthCheck[]> {
-		const serviceNames = Object.keys(serviceConfig) as TServiceName[]
+		const config = getServiceConfig()
 
 		const healthChecks = await Promise.allSettled(
 			serviceNames.map(async (serviceName) => await this.checkService(serviceName)),
@@ -74,7 +79,7 @@ export class HealthCheckService {
 			}
 			return {
 				name: serviceNames[index],
-				url: serviceConfig[serviceNames[index]].url,
+				url: config[serviceNames[index]].url,
 				status: EHealthStatus.UNHEALTHY,
 				responseTime: 0,
 				lastCheck: new Date(),

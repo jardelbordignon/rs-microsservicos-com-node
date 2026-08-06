@@ -4,19 +4,21 @@ services:
   checkout-service-db:
     container_name: checkout-service-db
     image: postgres:15-alpine
+    env_file:
+      - .env
     environment:
-      - POSTGRES_DB=${DB_NAME:-checkout_db}
-      - POSTGRES_USER=${DB_USER:-postgres}
-      - POSTGRES_PASSWORD=${DB_PASS:-postgres}
+      - POSTGRES_DB=${CHECKOUT_DB_NAME:-${DB_NAME}}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
     ports:
-      - '${DB_PORT:-5432}:5432'
+      - '${DB_PORT}:5432'
     volumes:
       - ./checkout_db_data:/var/lib/postgresql/data
     networks:
       - checkout-service-network
     restart: unless-stopped
     healthcheck:
-      test: ['CMD', 'pg_isready', '-U', '${DB_USER}', '-d', '${DB_NAME}']
+      test: ['CMD', 'pg_isready', '-U', '${DB_USER}', '-d', '${CHECKOUT_DB_NAME:-${DB_NAME}}']
       interval: 10s
       timeout: 5s
       retries: 5

@@ -89,7 +89,7 @@ export class CircuitBreakerService {
 			return result
 		} catch (error) {
 			this.onFailure(circuit, key, config)
-			this.logger.error(`Circuit breaker failure for $${key}:`, error.message)
+			this.logger.error(`Circuit breaker failure for ${key}:`, error.message)
 			if (fallback) {
 				this.logger.log(`Using fallback for ${key}`)
 				return await fallback()

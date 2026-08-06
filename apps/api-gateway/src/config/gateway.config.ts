@@ -1,6 +1,10 @@
-export type TServiceName = keyof typeof serviceConfig
+export const serviceNames = ['users', 'products', 'checkout', 'payments'] as const
 
-export const serviceConfig = {
+export type TServiceName = (typeof serviceNames)[number]
+
+export type TServiceConfig = Record<TServiceName, { url: string; timeout: number }>
+
+export const getServiceConfig = (): TServiceConfig => ({
 	users: {
 		url: process.env.USERS_SERVICE_URL ?? '',
 		timeout: 10000,
@@ -17,4 +21,7 @@ export const serviceConfig = {
 		url: process.env.PAYMENTS_SERVICE_URL ?? '',
 		timeout: 10000,
 	},
-} as const
+})
+
+export const getService = (serviceName: TServiceName) =>
+	getServiceConfig()[serviceName]

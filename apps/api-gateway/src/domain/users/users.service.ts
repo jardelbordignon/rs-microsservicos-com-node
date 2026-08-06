@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { firstValueFrom } from 'rxjs'
-import { serviceConfig } from '@/config/gateway.config'
+import { getServiceConfig } from '@/config/gateway.config'
 import type {
 	IAuthDto,
 	IAuthResponse,
@@ -35,11 +35,13 @@ export class UsersService {
 	}
 
 	async validateSessionToken(sessionToken: string): Promise<IUserSession> {
+		const service = getServiceConfig().users
+
 		try {
 			const { data } = await firstValueFrom(
 				this.httpService.get<IUserSession>(
-					`${serviceConfig.users.url}/sessions/validate/${sessionToken}`,
-					{ timeout: serviceConfig.users.timeout },
+					`${service.url}/sessions/validate/${sessionToken}`,
+					{ timeout: service.timeout },
 				),
 			)
 			return data
@@ -49,10 +51,12 @@ export class UsersService {
 	}
 
 	async login(dto: IAuthDto): Promise<IAuthResponse> {
+		const service = getServiceConfig().users
+
 		try {
 			const { data } = await firstValueFrom(
-				this.httpService.post(`${serviceConfig.users.url}/users/login`, dto, {
-					timeout: serviceConfig.users.timeout,
+				this.httpService.post(`${service.url}/users/login`, dto, {
+					timeout: service.timeout,
 				}),
 			)
 			return data
@@ -62,13 +66,15 @@ export class UsersService {
 	}
 
 	async register(data: IRegisterDto): Promise<IRegisterResponse> {
+		const service = getServiceConfig().users
+
 		try {
 			const { data: response } = await firstValueFrom(
 				this.httpService.post<IRegisterResponse>(
-					`${serviceConfig.users.url}/users/register`,
+					`${service.url}/users/register`,
 					data,
 					{
-						timeout: serviceConfig.users.timeout,
+						timeout: service.timeout,
 					},
 				),
 			)

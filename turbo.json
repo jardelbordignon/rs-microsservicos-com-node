@@ -20,6 +20,10 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "start:prod": {
+      "cache": false,
+      "persistent": true
+    },
     "start:dev": {
       "cache": false,
       "persistent": true

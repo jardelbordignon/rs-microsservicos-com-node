@@ -4,19 +4,21 @@ services:
   users-service-db:
     container_name: users-service-db
     image: postgres:15-alpine
+    env_file:
+      - .env
     environment:
-      - POSTGRES_DB=${DB_NAME:-users_db}
-      - POSTGRES_USER=${DB_USER:-postgres}
-      - POSTGRES_PASSWORD=${DB_PASS:-postgres}
+      - POSTGRES_DB=${USERS_DB_NAME:-${DB_NAME}}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
     ports:
-      - '${DB_PORT:-5435}:5432'
+      - '${DB_PORT}:5432'
     volumes:
       - users_db_data:/var/lib/postgresql/data
     networks:
       - users-service-network
     restart: unless-stopped
     healthcheck:
-      test: ['CMD', 'pg_isready', '-U', '${DB_USER:-postgres}', '-d', '${DB_NAME:-users_db}']
+      test: ['CMD', 'pg_isready', '-U', '${DB_USER}', '-d', '${USERS_DB_NAME:-${DB_NAME}}']
       interval: 10s
       timeout: 5s
       retries: 5

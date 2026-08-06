@@ -3,12 +3,14 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run start:dev",
+    "start": "node scripts/kill-ports.ts && turbo run start:prod",
+    "dev": "node scripts/kill-ports.ts && turbo run start:dev",
     "lint": "turbo run lint",
     "docker": "turbo run docker",
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
+    "@types/node": "^24.13.2",
     "prettier": "^3.7.4",
     "turbo": "^2.9.18",
     "typescript": "5.9.2"

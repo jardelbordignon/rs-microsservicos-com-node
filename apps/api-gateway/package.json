@@ -12,7 +12,9 @@
 		"start:dev": "nest start --watch",
 		"start:debug": "nest start --debug --watch",
 		"start:prod": "node dist/main",
-		"push": "./scripts/push.sh"
+		"push": "./scripts/push.sh",
+		"spec": "vitest run --config src/test/config/vitest.unit.config.ts",
+		"test": "vitest run --config src/test/config/vitest.e2e.config.ts"
 	},
 	"dependencies": {
 		"@fastify/helmet": "^13.0.2",
@@ -49,12 +51,15 @@
 		"@types/node": "^24.13.2",
 		"@types/passport-jwt": "^4.0.1",
 		"@types/supertest": "^7.2.0",
+		"@vitest/coverage-v8": "^4.1.10",
 		"fastify": "^5.8.5",
 		"globals": "^17.6.0",
 		"source-map-support": "^0.5.21",
 		"supertest": "^7.2.2",
 		"ts-loader": "^9.6.1",
 		"ts-node": "^10.9.2",
-		"tsconfig-paths": "^4.2.0"
+		"tsconfig-paths": "^4.2.0",
+		"unplugin-swc": "^1.5.9",
+		"vitest": "^4.1.10"
 	}
 }

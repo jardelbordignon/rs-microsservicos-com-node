@@ -5,10 +5,8 @@ import { CircuitBreakerService } from '@/common/circuit-breaker/circuit-breaker.
 import { FallbackService } from '@/common/fallback/fallback.service'
 import { RetryService } from '@/common/retry/retry.service'
 import { TimeoutService } from '@/common/timeout/timeout.service'
-import { serviceConfig } from '@/config/gateway.config'
+import { getService, type TServiceName } from '@/config/gateway.config'
 import type { IUserInfo } from '@/interfaces/auth.interface'
-
-type TServiceName = keyof typeof serviceConfig
 
 type TProxyRequestProps = {
 	serviceName: TServiceName
@@ -43,7 +41,7 @@ export class ProxyService {
 	): Promise<TProxyResponse | ReturnType<typeof this.createServiceFallback>> {
 		const { data, serviceName, path, method, headers, userInfo } = props
 
-		const service = serviceConfig[serviceName]
+		const service = getService(serviceName)
 		const url = `${service.url}${path}`
 
 		this.logger.log(`Proxying ${method} request to ${serviceName}: ${url}`)
