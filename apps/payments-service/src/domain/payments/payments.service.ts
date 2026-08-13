@@ -133,7 +133,7 @@ export class PaymentsService {
 				`Lease perdido durante o processamento do pagamento ${payment.id}`,
 			)
 
-			return this.paymentRepository.findOneByOrFail({	id: payment.id	})
+			return this.paymentRepository.findOneByOrFail({ id: payment.id })
 		}
 
 		Object.assign(payment, paymentUpdateData)

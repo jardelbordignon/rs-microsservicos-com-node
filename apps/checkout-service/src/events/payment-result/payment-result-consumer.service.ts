@@ -1,8 +1,8 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { OrdersService } from '@/domain/orders/orders.service'
-import { PaymentResultQueueService } from './payment-result-queue.service'
-import type { IPaymentProcessingResultEvent } from './payment-result.interface'
 import { RabbitmqService } from '../rabbitmq/rabbitmq.service'
+import type { IPaymentProcessingResultEvent } from './payment-result.interface'
+import { PaymentResultQueueService } from './payment-result-queue.service'
 
 @Injectable()
 export class PaymentResultConsumerService implements OnModuleInit {
@@ -74,4 +74,3 @@ export class PaymentResultConsumerService implements OnModuleInit {
 		return true
 	}
 }
-

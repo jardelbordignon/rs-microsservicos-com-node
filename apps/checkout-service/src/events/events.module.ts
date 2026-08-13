@@ -1,9 +1,9 @@
-import { Module, forwardRef } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { OrdersModule } from '@/domain/orders/orders.module'
+import { PaymentQueueService } from './payment-queue/payment-queue.service'
 import { PaymentResultConsumerService } from './payment-result/payment-result-consumer.service'
 import { PaymentResultQueueService } from './payment-result/payment-result-queue.service'
-import { PaymentQueueService } from './payment-queue/payment-queue.service'
 import { RabbitmqService } from './rabbitmq/rabbitmq.service'
 
 @Module({
@@ -14,10 +14,6 @@ import { RabbitmqService } from './rabbitmq/rabbitmq.service'
 		PaymentResultQueueService,
 		PaymentResultConsumerService,
 	],
-	exports: [
-		RabbitmqService,
-		PaymentQueueService,
-		PaymentResultQueueService,
-	],
+	exports: [RabbitmqService, PaymentQueueService, PaymentResultQueueService],
 })
 export class EventsModule {}

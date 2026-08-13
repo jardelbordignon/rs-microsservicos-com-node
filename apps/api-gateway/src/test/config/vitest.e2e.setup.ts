@@ -48,13 +48,10 @@ function runPsqlInContainer(
 	password: string,
 	sql: string,
 ): string {
-	return execSync(
-		`docker exec ${containerName} psql -U ${user} -c "${sql}"`,
-		{
-			env: { PGPASSWORD: password, ...process.env },
-			stdio: 'pipe',
-		},
-	)
+	return execSync(`docker exec ${containerName} psql -U ${user} -c "${sql}"`, {
+		env: { PGPASSWORD: password, ...process.env },
+		stdio: 'pipe',
+	})
 		.toString()
 		.trim()
 }
@@ -77,9 +74,14 @@ async function createTempDatabases(dbNames: Record<string, string>): Promise<voi
 				config.dbPass,
 				`CREATE DATABASE ${tempDbName};`,
 			)
-			console.log(`🗄️ Banco provisório criado: ${tempDbName} (container: ${config.containerName})`)
+			console.log(
+				`🗄️ Banco provisório criado: ${tempDbName} (container: ${config.containerName})`,
+			)
 		} catch (error) {
-			const stderr = error instanceof Error ? (error as { stderr?: Buffer }).stderr?.toString() : ''
+			const stderr =
+				error instanceof Error
+					? (error as { stderr?: Buffer }).stderr?.toString()
+					: ''
 			if (stderr?.includes('already exists')) {
 				console.log(`ℹ️ Banco ${tempDbName} já existe, prosseguindo`)
 			} else {
@@ -93,7 +95,9 @@ async function createTempDatabases(dbNames: Record<string, string>): Promise<voi
 async function dropTempDatabases(dbNames: Record<string, string>): Promise<void> {
 	for (const config of SERVICES_DB_CONFIG) {
 		const tempDbName = dbNames[config.envVarName]
-		if (!tempDbName) continue
+		if (!tempDbName) {
+			continue
+		}
 
 		try {
 			runPsqlInContainer(
@@ -113,7 +117,9 @@ async function dropTempDatabases(dbNames: Record<string, string>): Promise<void>
 				config.dbPass,
 				`DROP DATABASE IF EXISTS ${tempDbName};`,
 			)
-			console.log(`🗑️ Banco provisório removido: ${tempDbName} (container: ${config.containerName})`)
+			console.log(
+				`🗑️ Banco provisório removido: ${tempDbName} (container: ${config.containerName})`,
+			)
 		} catch (error) {
 			console.error(`⚠️ Erro ao remover banco ${tempDbName}:`, error)
 		}

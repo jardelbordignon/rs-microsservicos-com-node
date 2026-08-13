@@ -74,10 +74,7 @@ export class CartService {
 		return cart
 	}
 
-	async addItem(
-		user: IUserInfo,
-		dto: AddOrRemoveCartItemDto,
-	): Promise<Cart> {
+	async addItem(user: IUserInfo, dto: AddOrRemoveCartItemDto): Promise<Cart> {
 		const product = await this.productsClientService.getProduct(dto.productId)
 
 		if (!product.isActive) {
@@ -110,7 +107,7 @@ export class CartService {
 			item.subtotal = productPriceInCents * item.quantity
 
 			await this.cartItemRepository.save(item)
-			cart.items = cart.items.map(i => (i.productId === item.productId ? item : i))
+			cart.items = cart.items.map((i) => (i.productId === item.productId ? item : i))
 			cart.amount = cart.items.reduce((acc, item) => acc + item.subtotal, 0)
 			await this.cartRepository.save(cart)
 		} else {
@@ -132,17 +129,14 @@ export class CartService {
 		return this.getCart(user)
 	}
 
-	async removeItem(
-		user: IUserInfo,
-		dto: AddOrRemoveCartItemDto,
-	): Promise<Cart> {
+	async removeItem(user: IUserInfo, dto: AddOrRemoveCartItemDto): Promise<Cart> {
 		const cart = await this.findActiveCart(user.id)
 
 		if (!cart) {
 			throw new NotFoundException('Carrinho ativo nao encontrado')
 		}
 
-		const item = cart.items.find(i => i.productId === dto.productId)
+		const item = cart.items.find((i) => i.productId === dto.productId)
 
 		if (!item) {
 			throw new NotFoundException('Item do carrinho nao encontrado')
@@ -156,12 +150,12 @@ export class CartService {
 
 		if (item.quantity === dto.quantity) {
 			await this.cartItemRepository.remove(item)
-			cart.items = cart.items.filter(i => i.productId !== item.productId)
+			cart.items = cart.items.filter((i) => i.productId !== item.productId)
 		} else {
 			item.quantity -= dto.quantity
 			item.subtotal = item.price * item.quantity
 			await this.cartItemRepository.save(item)
-			cart.items = cart.items.map(i => (i.productId === item.productId ? item : i))
+			cart.items = cart.items.map((i) => (i.productId === item.productId ? item : i))
 		}
 
 		if (cart.items.length === 0) {

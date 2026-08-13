@@ -125,8 +125,7 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
 			}
 
 			await this.channel.assertExchange(exchange, 'topic', { durable: true })
-			const payload =
-				typeof message === 'string' ? message : JSON.stringify(message)
+			const payload = typeof message === 'string' ? message : JSON.stringify(message)
 			const messageBuffer = Buffer.from(payload)
 
 			const published = this.channel.publish(exchange, routingKey, messageBuffer, {

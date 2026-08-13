@@ -10,11 +10,6 @@ export class PaymentResultPublisher {
 	constructor(private readonly rabbitmqService: RabbitmqService) {}
 
 	async publish(event: IPaymentProcessingResultEvent): Promise<void> {
-		await this.rabbitmqService.publishMessage(
-			this.EXCHANGE,
-			this.ROUTING_KEY,
-			event,
-		)
+		await this.rabbitmqService.publishMessage(this.EXCHANGE, this.ROUTING_KEY, event)
 	}
 }
-

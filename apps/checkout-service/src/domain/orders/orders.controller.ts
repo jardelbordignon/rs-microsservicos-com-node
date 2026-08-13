@@ -1,4 +1,11 @@
-import { Body, Controller, HttpStatus, Param, ParseUUIDPipe, Req } from '@nestjs/common'
+import {
+	Body,
+	Controller,
+	HttpStatus,
+	Param,
+	ParseUUIDPipe,
+	Req,
+} from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Endpoint } from '@repo/utils'
 import type { FastifyRequest } from 'fastify'
@@ -43,7 +50,8 @@ export class OrdersController {
 			},
 			{
 				status: HttpStatus.BAD_REQUEST,
-				description: 'Payload invalido (ex: paymentMethod fora do conjunto permitido)',
+				description:
+					'Payload invalido (ex: paymentMethod fora do conjunto permitido)',
 			},
 			{
 				status: HttpStatus.UNAUTHORIZED,

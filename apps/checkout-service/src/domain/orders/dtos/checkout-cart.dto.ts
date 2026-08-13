@@ -12,4 +12,3 @@ export class CheckoutCartDto {
 	})
 	paymentMethod: EPaymentMethod
 }
-

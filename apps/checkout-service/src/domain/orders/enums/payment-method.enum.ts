@@ -4,4 +4,3 @@ export enum EPaymentMethod {
 	PIX = 'pix',
 	TICKET = 'ticket', // boleto
 }
-

@@ -32,7 +32,7 @@ export class CartItem {
 	@Column({ type: 'varchar', length: 255 })
 	productName: string
 
-	@Column({	type: 'int'	})
+	@Column({ type: 'int' })
 	price: number
 
 	@Column({

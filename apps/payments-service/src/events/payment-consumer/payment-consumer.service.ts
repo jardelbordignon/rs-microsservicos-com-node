@@ -1,12 +1,12 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
-import { PaymentsService } from '@/domain/payments/payments.service'
 import { EPaymentStatus } from '@/domain/payments/enums/payment-status.enum'
+import { PaymentsService } from '@/domain/payments/payments.service'
 import { MetricsService } from '../metrics/metrics.service'
 import { PaymentQueueService } from '../payment-queue/payment-queue.service'
 import { IPaymentOrderMessage } from '../payment-queue.interface'
+import type { IPaymentProcessingResultEvent } from '../payment-result/payment-result.interface'
 import { PaymentResultPublisher } from '../payment-result/payment-result.publisher'
 import { RabbitmqService } from '../rabbitmq/rabbitmq.service'
-import type { IPaymentProcessingResultEvent } from '../payment-result/payment-result.interface'
 
 @Injectable()
 export class PaymentConsumerService implements OnModuleInit {
@@ -139,7 +139,9 @@ export class PaymentConsumerService implements OnModuleInit {
 			status: payment.status,
 			processedAt: payment.processedAt.toISOString(),
 			...(payment.transactionId ? { transactionId: payment.transactionId } : {}),
-			...(payment.rejectionReason ? { rejectionReason: payment.rejectionReason } : {}),
+			...(payment.rejectionReason
+				? { rejectionReason: payment.rejectionReason }
+				: {}),
 		}
 
 		await this.paymentResultPublisher.publish(event)

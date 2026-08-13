@@ -8,4 +8,3 @@ export interface IPaymentProcessingResultEvent {
 	rejectionReason?: string
 	processedAt: string
 }
-

@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Endpoint } from '@repo/utils'
-import { Public } from '../auth/decorators/public.decorator'
+import { Public } from '../../auth/decorators/public.decorator'
 import { LoginDto } from './dtos/login.dto'
 import { RegisterDto } from './dtos/register.dto'
 import { UserRole } from './entities/user.entity'

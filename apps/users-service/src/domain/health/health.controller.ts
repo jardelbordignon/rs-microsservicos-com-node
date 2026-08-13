@@ -1,17 +1,16 @@
 import { Controller, HttpStatus } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { Endpoint } from '@repo/utils'
-import { AppService } from './app.service'
-import { Public } from './auth/decorators/public.decorator'
+import { Public } from '@/auth/decorators/public.decorator'
+import { HealthService } from './health.service'
 
 @ApiTags('Health')
-@Controller()
-export class AppController {
-	constructor(private readonly appService: AppService) {}
+@Controller('health')
+export class HealthController {
+	constructor(private readonly healthService: HealthService) {}
 
 	@Endpoint({
 		type: 'Get',
-		path: 'health',
 		summary: 'Health check do users-service',
 		responses: [
 			{ status: HttpStatus.OK, description: 'Users service está saudável' },
@@ -19,6 +18,6 @@ export class AppController {
 	})
 	@Public()
 	getHealth() {
-		return this.appService.getHealth()
+		return this.healthService.getHealth()
 	}
 }
