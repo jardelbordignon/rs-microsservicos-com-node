@@ -29,7 +29,7 @@ export class MetricsService implements OnModuleInit {
 	onModuleInit() {
 		collectDefaultMetrics({
 			register: this.registry,
-			prefix: 'api_gateway_',
+			prefix: 'checkout_service_',
 		})
 	}
 

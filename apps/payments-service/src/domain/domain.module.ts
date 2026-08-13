@@ -2,10 +2,10 @@ import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common
 import { HealthModule } from './health/health.module'
 import { HttpMetricsMiddleware } from './metrics/http-metrics.middleware'
 import { MetricsModule } from './metrics/metrics.module'
-import { ProductsModule } from './products/products.module'
+import { PaymentsModule } from './payments/payments.module'
 
 @Module({
-	imports: [HealthModule, ProductsModule, MetricsModule],
+	imports: [HealthModule, MetricsModule, PaymentsModule],
 	controllers: [],
 })
 export class DomainModule implements NestModule {

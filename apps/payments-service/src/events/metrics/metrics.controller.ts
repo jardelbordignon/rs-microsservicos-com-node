@@ -1,7 +1,9 @@
 import { Controller, Logger } from '@nestjs/common'
 import { Endpoint } from '@repo/utils'
+import { Public } from '@/auth/decorators/public.decorator'
 import { MetricsService } from './metrics.service'
 
+@Public()
 @Controller('metrics')
 export class MetricsController {
 	private readonly logger = new Logger(MetricsController.name)
