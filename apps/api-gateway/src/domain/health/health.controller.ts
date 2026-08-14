@@ -1,100 +1,39 @@
-import { Controller, HttpStatus, Param } from '@nestjs/common'
+import { Controller, HttpStatus } from '@nestjs/common'
+import {
+	HealthCheck,
+	HealthCheckService,
+	HttpHealthIndicator,
+} from '@nestjs/terminus'
 import { Endpoint } from '@repo/utils'
-import type { TServiceName } from '@/config/gateway.config'
-import { HealthService } from './health.service'
+import { getServiceConfig } from '@/config/gateway.config'
 
 @Controller('health')
 export class HealthController {
-	constructor(private readonly healthService: HealthService) {}
+	constructor(
+		private health: HealthCheckService,
+		private http: HttpHealthIndicator,
+	) {}
 
 	@Endpoint({
 		type: 'Get',
-		path: '/',
-		summary: 'Check health of the gateway',
-		description: 'Check if the gateway is healthy',
-		responses: [
-			{
-				status: HttpStatus.OK,
-				description: 'Gateway is healthy',
-			},
-		],
-	})
-	getHealth() {
-		return this.healthService.getHealth()
-	}
-
-	@Endpoint({
-		type: 'Get',
-		path: '/services',
 		summary: 'Check health of the services',
-		description: 'Check if the services are healthy',
+		description: 'Check if the services is healthy',
 		responses: [
 			{
 				status: HttpStatus.OK,
-				description: 'Services are healthy',
+				description: 'Services is healthy',
 			},
 		],
 	})
-	getServicesHealth() {
-		return this.healthService.getServicesHealth()
-	}
+	@HealthCheck()
+	getHealth() {
+		const { checkout, payments, products, users } = getServiceConfig()
 
-	@Endpoint({
-		type: 'Get',
-		path: '/services/:serviceName',
-		summary: 'Check health of a specific service',
-		description: 'Check if a specific service is healthy',
-		responses: [
-			{
-				status: HttpStatus.OK,
-				description: 'Service is healthy',
-			},
-		],
-	})
-	async getServiceHealth(@Param('serviceName') serviceName: TServiceName) {
-		return this.healthService.getServiceHealth(serviceName)
-	}
-
-	/**
-	 * Verifica se o container foi orquestrado e os serviços estão de prontidão, prontos para processar requisições http
-	 */
-	@Endpoint({
-		type: 'Get',
-		path: '/ready',
-		summary: 'Get the readiness status',
-		description: 'Get the readiness status of the services',
-		responses: [
-			{
-				status: HttpStatus.OK,
-				description: 'Readiness status retrieved successfully',
-			},
-		],
-	})
-	async getReady() {
-		return this.healthService.getReadyStatus()
-	}
-
-	/**
-	 * Verifica se o container está vivo e rodando
-	 * se o processo está respondendo
-	 * se não há deadlocks ou travamentos
-	 * se a aplicação não entrou em um estado irrecuperável
-	 * é uma verificação simples, sem considerar os serviços
-	 * caso essa verificação falhe, o container deverá ser reiniciado
-	 */
-	@Endpoint({
-		type: 'Get',
-		path: '/live',
-		summary: 'Get the liveness status',
-		description: 'Get the liveness status of the gateway',
-		responses: [
-			{
-				status: HttpStatus.OK,
-				description: 'Liveness status retrieved successfully',
-			},
-		],
-	})
-	async getLive() {
-		return this.healthService.getLiveStatus()
+		return this.health.check([
+			() => this.http.pingCheck('checkout-service', `${checkout.url}/health`),
+			() => this.http.pingCheck('payments-service', `${payments.url}/health`),
+			() => this.http.pingCheck('products-service', `${products.url}/health`),
+			() => this.http.pingCheck('users-service', `${users.url}/health`),
+		])
 	}
 }

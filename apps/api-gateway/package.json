@@ -28,6 +28,7 @@
 		"@nestjs/platform-express": "^11.1.27",
 		"@nestjs/platform-fastify": "^11.1.27",
 		"@nestjs/swagger": "^11.4.4",
+		"@nestjs/terminus": "^11.1.1",
 		"@nestjs/throttler": "^6.5.0",
 		"@repo/utils": "workspace:*",
 		"@scalar/nestjs-api-reference": "^1.2.4",

@@ -4,7 +4,6 @@ import { APP_GUARD } from '@nestjs/core'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { CircuitBreakerModule } from './common/circuit-breaker/circuit-breaker.module'
 import { FallbackModule } from './common/fallback/fallback.module'
-import { HealthCheckModule } from './common/health-check/health-check.module'
 import { RetryModule } from './common/retry/retry.module'
 import { TimeoutModule } from './common/timeout/timeout.module'
 import { DomainModule } from './domain/domain.module'
@@ -41,7 +40,6 @@ import { ProxyModule } from './proxy/proxy.module'
 		DomainModule,
 		MiddlewareModule,
 		FallbackModule,
-		HealthCheckModule,
 		CircuitBreakerModule,
 		TimeoutModule,
 		RetryModule,
