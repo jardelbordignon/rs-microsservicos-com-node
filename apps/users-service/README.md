@@ -1,98 +1,142 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# users-service
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Microsserviço de autenticação e gerenciamento de usuários do marketplace.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Visão geral
 
-## Description
+Responsável por registro, login com JWT, dados de perfil e manutenção de contas.
+É chamado pelo `api-gateway` via proxy HTTP nas rotas `/users/*`.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ pnpm install
+```
+api-gateway (4001)
+    │  /users/*
+    ▼
+┌──────────────────┐
+│  users-service   │
+│ NestJS + Fastify │
+│   (Porta 4005)   │
+└────────┬─────────┘
+         │ PostgreSQL
+   ┌─────▼──────┐
+   │ users-db   │
+   │ (:5435)     │
+   └────────────┘
 ```
 
-## Compile and run the project
+## Porta e endereços
+
+| Interface            | URL                                |
+| -------------------- | ---------------------------------- |
+| API principal        | http://localhost:4005              |
+| Swagger / Scalar UI  | http://localhost:4005/doc          |
+| Health               | http://localhost:4005/health       |
+| Métricas Prometheus  | http://localhost:4005/metrics      |
+
+## Principais funcionalidades
+
+- **Registro de usuários** com hash de senha (bcryptjs)
+- **Login / Autenticação JWT** (Passport + JWT strategy)
+- **Perfil do usuário** (meus dados)
+- **Listagem e CRUD** de usuários
+- **Health check** (Terminus)
+- **Métricas HTTP + de processo** (prom-client)
+
+## Pré-requisitos
+
+- Node.js >= 18
+- pnpm 11
+- Docker (para PostgreSQL local)
+- Segredo JWT compartilhado com `api-gateway`
+
+## Scripts
+
+| Script             | Descrição                                                |
+| ------------------ | -------------------------------------------------------- |
+| `pnpm build`       | Build do serviço (Nest CLI)                             |
+| `pnpm start:dev`   | Modo desenvolvimento (watch)                            |
+| `pnpm start:debug` | Modo desenvolvimento com debug + watch                  |
+| `pnpm start:prod`  | Rodar build final (`dist/main`)                         |
+| `pnpm lint`        | Biome check + write                                     |
+| `pnpm docker`      | Sobe banco PostgreSQL via docker-compose (down + up -d)  |
+
+## Como rodar local
+
+1. Instale as dependências (na raiz do monorepo):
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+pnpm install
 ```
 
-## Run tests
+2. Copie `.env.example` para `.env` e ajuste os valores (`.env.example` já contém defaults de desenvolvimento):
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+cd apps/users-service
+cp .env.example .env
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+3. Suba o banco PostgreSQL:
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+# Na raiz do monorepo
+pnpm docker --filter=users-service
+
+# Ou na pasta do app
+pnpm docker
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+4. Inicie o serviço:
 
-## Resources
+```bash
+# Na raiz do monorepo
+pnpm dev --filter=users-service
 
-Check out a few resources that may come in handy when working with NestJS:
+# Ou na pasta do app
+pnpm start:dev
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Variáveis de ambiente (.env)
 
-## Support
+| Variável           | Padrão            | Descrição                              |
+| ------------------ | ----------------- | -------------------------------------- |
+| `PORT`             | 4005              | Porta HTTP do serviço                 |
+| `NODE_ENV`         | `development`     | Ambiente de execução                   |
+| `JWT_SECRET`       | —                 | Segredo JWT (igual ao api-gateway)     |
+| `JWT_EXPIRES_IN`   | `7d`              | Tempo de expiração do token            |
+| `DB_HOST`          | `localhost`       | Host PostgreSQL                        |
+| `DB_PORT`          | `5435`            | Porta PostgreSQL                       |
+| `DB_USER`          | `postgres`        | Usuário PostgreSQL                     |
+| `DB_PASS`          | `postgres`        | Senha PostgreSQL                       |
+| `DB_NAME`          | `users-db`        | Nome do banco                          |
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Endpoints principais
 
-## Stay in touch
+| Método | Rota               | Descrição                      | Auth |
+| ------ | ------------------ | ------------------------------ | ---- |
+| GET    | `/health`          | Health check                   | ❌   |
+| GET    | `/metrics`         | Métricas Prometheus            | ❌   |
+| GET    | `/doc`             | Scalar OpenAPI UI              | ❌   |
+| POST   | `/auth/register`   | Registro de novo usuário       | ❌   |
+| POST   | `/auth/login`      | Login → retorna JWT            | ❌   |
+| GET    | `/users/me`        | Dados do usuário autenticado   | ✅   |
+| GET    | `/users`           | Lista todos os usuários        | ✅   |
+| GET    | `/users/:id`       | Detalhe de um usuário por ID   | ✅   |
+| PATCH  | `/users/:id`       | Atualiza dados de um usuário   | ✅   |
+| DELETE | `/users/:id`       | Remove um usuário              | ✅   |
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Diferenciais de segurança
 
-## License
+- Senhas persistidas com **bcryptjs** (hash + salt)
+- `JwtAuthGuard` GLOBAL: todos os endpoints são protegidos por padrão
+- Endpoints públicos explicitamente marcados com decorator `@Public()`
+- Throttler para proteção de rate limit em nível de rota
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Observabilidade
+
+- **Métricas HTTP:** `http_requests_total`, `http_request_duration_seconds` (via middleware)
+- **Métricas de processo:** prefixo `users_service_`
+  (ex: `users_service_process_resident_memory_bytes`, `users_service_nodejs_eventloop_lag_seconds`)
+- **Scrape Prometheus:** Job `users-service` em `host.docker.internal:4005/metrics`
+
+## Documentação técnica adicional
+
+Specs do app em `docs/specs/` (se houver).

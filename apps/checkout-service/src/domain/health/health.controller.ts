@@ -1,6 +1,10 @@
 import { Controller, HttpStatus } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import { HealthCheck, HealthCheckService, TypeOrmHealthIndicator } from '@nestjs/terminus'
+import {
+	HealthCheck,
+	HealthCheckService,
+	TypeOrmHealthIndicator,
+} from '@nestjs/terminus'
 import { Endpoint } from '@repo/utils'
 import { Public } from '@/auth/decorators/public.decorator'
 import { RabbitMQHealthIndicator } from './rabbitmq.health-indicator'

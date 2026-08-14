@@ -1,98 +1,153 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# api-gateway
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Gateway HTTP único de entrada do marketplace. Responsável por autenticação, proxy reverso, rate-limit,
+circuit-breaker, retry, timeout e agregação de health checks dos serviços internos.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Visão geral
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ pnpm install
+```
+Clientes HTTP (Frontend, Mobile, API)
+            │
+            ▼
+    ┌─────────────────────┐
+    │     api-gateway     │
+    │  NestJS + Fastify   │
+    │    (Porta 4001)     │
+    └─────────┬───────────┘
+        ┌─────┼─────────┐
+        ▼     ▼         ▼
+   users   products   checkout
+ (4005)    (4004)     (4002)
 ```
 
-## Compile and run the project
+## Responsabilidades
+
+- **Proxy HTTP:** Roteia requisições para os microsserviços internos
+- **Autenticação JWT:** Valida tokens nos endpoints protegidos
+- **Rate Limiting:** Protege contra abuso (3 níveis: short/medium/long)
+- **Resiliência:** Circuit Breaker, Retry e Timeout nas chamadas de proxy
+- **Health Checks agregados:** Verifica status de todos os serviços
+- **Observabilidade:** Logging estruturado, métricas HTTP e métricas de processo
+- **Documentação:** API Scalar/OpenAPI auto documentada
+
+## Porta e endereços
+
+| Interface            | URL                                |
+| -------------------- | ---------------------------------- |
+| API principal        | http://localhost:4001              |
+| Swagger / Scalar UI  | http://localhost:4001/doc          |
+| Health (geral)       | http://localhost:4001/health       |
+| Health (serviços)    | http://localhost:4001/health/services |
+| Métricas Prometheus  | http://localhost:4001/metrics      |
+
+## Pré-requisitos
+
+- Node.js >= 18
+- pnpm 11
+- Microsserviços alvo rodando (users, products, checkout)
+- **Opcional:** Serviços de infra (RabbitMQ, Prometheus, Grafana)
+
+## Scripts
+
+| Script             | Descrição                                                |
+| ------------------ | -------------------------------------------------------- |
+| `pnpm build`       | Build do serviço (Nest CLI)                             |
+| `pnpm start:dev`   | Modo desenvolvimento (watch)                            |
+| `pnpm start:debug` | Modo desenvolvimento com debug + watch                  |
+| `pnpm start:prod`  | Rodar build final (`dist/main`)                         |
+| `pnpm lint`        | Biome check + write                                     |
+| `pnpm spec`        | Rodar testes unitários (Vitest)                         |
+| `pnpm test`        | Rodar testes E2E (Vitest)                               |
+
+## Como rodar local
+
+1. Instale as dependências (na raiz do monorepo):
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+pnpm install
 ```
 
-## Run tests
+2. Suba as dependências (bancos + infra) via Turborepo (na raiz):
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+pnpm docker
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+3. Suba os microsserviços alvo (em paralelo ou individual):
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+# Individualmente, em terminais separados
+pnpm dev --filter=users-service
+pnpm dev --filter=products-service
+pnpm dev --filter=checkout-service
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+4. Inicie o gateway em modo desenvolvimento:
 
-## Resources
+```bash
+# Na raiz do monorepo
+pnpm dev --filter=api-gateway
 
-Check out a few resources that may come in handy when working with NestJS:
+# Ou na pasta do app
+pnpm start:dev
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Variáveis de ambiente
 
-## Support
+Copie `.env.example` para `.env` e ajuste:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+| Variável             | Padrão    | Descrição                                    |
+| -------------------- | --------- | -------------------------------------------- |
+| `PORT`               | 4001      | Porta HTTP do gateway                        |
+| `RATE_LIMIT_SHORT`   | 10        | Requisições por 1s (mesmo IP)                |
+| `RATE_LIMIT_MEDIUM`  | 100       | Requisições por 1min (mesmo IP)              |
+| `RATE_LIMIT_LONG`    | 1000      | Requisições por 15min (mesmo IP)             |
+| `JWT_SECRET`         | —         | Segredo JWT (mesmo usado por users-service)  |
 
-## Stay in touch
+## Endpoints principais
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+| Método | Rota                    | Descrição                     | Auth |
+| ------ | ----------------------- | ----------------------------- | ---- |
+| GET    | `/health`               | Health do gateway             | ❌   |
+| GET    | `/health/services`      | Health agregado dos serviços  | ❌   |
+| GET    | `/health/ready`         | Readiness (orquestração)      | ❌   |
+| GET    | `/health/live`          | Liveness                      | ❌   |
+| GET    | `/metrics`              | Métricas Prometheus           | ❌   |
+| GET    | `/doc`                  | Scalar OpenAPI UI             | ❌   |
+| POST   | `/users/auth/register`  | Registro de usuário           | ❌   |
+| POST   | `/users/auth/login`     | Login → JWT                   | ❌   |
+| GET    | `/users/me`             | Usuário autenticado           | ✅   |
+| *      | `/users/*`              | Proxy → users-service (4005)  | ✅   |
+| *      | `/products/*`           | Proxy → products-service (4004) | ✅ |
+| GET    | `/cart`                 | Proxy carrinho                | ✅   |
+| POST   | `/cart/items`           | Adicionar item carrinho       | ✅   |
+| POST   | `/checkout`             | Finalizar compra              | ✅   |
+| GET    | `/orders`               | Listar pedidos                | ✅   |
+| GET    | `/orders/:id`           | Detalhe do pedido             | ✅   |
 
-## License
+## Testes
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```bash
+# Testes unitários (arquivos *.spec.ts)
+pnpm spec
+
+# Testes E2E (integração)
+pnpm test
+```
+
+## Observabilidade
+
+- **Métricas HTTP:** `http_requests_total`, `http_request_duration_seconds`
+- **Métricas de processo:** prefixo `api_gateway_` (ex: `api_gateway_process_resident_memory_bytes`)
+- **Scrape Prometheus:** Job `api-gateway` em `host.docker.internal:4001/metrics`
+
+## Documentação técnica adicional
+
+Specs do app em `docs/specs/`:
+
+| Arquivo                                                             | Descrição                                                  |
+| ------------------------------------------------------------------- | ---------------------------------------------------------- |
+| [01-checkout-service-api-gateway-integration.md](./docs/specs/01-checkout-service-api-gateway-integration.md) | Integração com checkout-service |
+| [02-payments-gateway-integration.md](./docs/specs/02-payments-gateway-integration.md) | Integração com payments / gateway de pagamentos  |
+| [03-http-metrics-instrumentation.md](./docs/specs/03-http-metrics-instrumentation.md) | Instrumentação de métricas HTTP           |
+| [04-terminus-health-checks.md](./docs/specs/04-terminus-health-checks.md) | Health checks com Terminus                          |

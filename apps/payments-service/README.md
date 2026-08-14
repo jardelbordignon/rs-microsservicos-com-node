@@ -1,98 +1,190 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# payments-service
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Microsserviço de processamento de pagamentos do marketplace.
+Consome pedidos de pagamento via RabbitMQ do `checkout-service`, processa via gateway fake
+e publica de volta o resultado (aprovado/rejeitado).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Visão geral
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ pnpm install
+```
+                checkout-service (4002)
+                         │
+           publica: payment.order (exchange "payments")
+                         ▼
+              ┌─────────────────────────┐
+              │  RabbitMQ (5672)        │
+              └────────────┬────────────┘
+                           │ consome
+                           ▼
+              ┌─────────────────────────┐
+              │    payments-service     │
+              │   NestJS + Fastify      │
+              │      (Porta 4003)       │
+              └────────────┬────────────┘
+                           │
+               ┌───────────┼───────────┐
+               ▼           ▼           ▼
+      FakePayment     PostgreSQL     publica resultado
+      Gateway          (:5433)        routing key:
+      (aprova/rejeita)  payments-db   payment.result.*
+                           │
+                           ▼
+              ┌─────────────────────────┐
+              │  RabbitMQ (5672)        │
+              └────────────┬────────────┘
+                           │ consome
+                           ▼
+                checkout-service (atualiza
+                status do pedido)
 ```
 
-## Compile and run the project
+## Porta e endereços
 
-```bash
-# development
-$ pnpm run start
+| Interface            | URL                                |
+| -------------------- | ---------------------------------- |
+| API principal        | http://localhost:4003              |
+| Swagger / Scalar UI  | http://localhost:4003/doc          |
+| Health               | http://localhost:4003/health       |
+| Métricas Prometheus  | http://localhost:4003/metrics      |
 
-# watch mode
-$ pnpm run start:dev
+## Principais funcionalidades
 
-# production mode
-$ pnpm run start:prod
+- **Consumo assíncrono** de ordens de pagamento via RabbitMQ
+- **Processamento via FakePaymentGateway:** regras determinísticas:
+  - `amount > 10000` → `REJECTED` (limit_exceeded)
+  - Valor com parte decimal `.99` → `REJECTED` (card_declined)
+  - Demais → `APPROVED`
+- **Persistência** do pagamento no banco (TypeORM/PostgreSQL)
+- **Publicação de evento de resultado** apenas após persistência bem-sucedida
+- **Flag de publicação** (`resultEventPublishedAt`) para garantir idempotência
+- **API HTTP** para consulta de pagamentos e histórico
+- **Métricas HTTP + métricas de negócio** (counters de pagamento)
+
+## Fluxo de processamento
+
+```
+1. Message chega na queue payment_order
+2. PaymentConsumerService.receivedMessage()
+3. Valida / cria entidade Payment
+4. Chama FakePaymentGatewayService.process()
+5. Persiste resultado no banco
+6. Se sucesso: publica PaymentResult na exchange "payments"
+7. Marca resultEventPublishedAt (garante evento único)
+8. ACK da mensagem
 ```
 
-## Run tests
+## Pré-requisitos
+
+- Node.js >= 18
+- pnpm 11
+- Docker (PostgreSQL + RabbitMQ)
+
+## Scripts
+
+| Script             | Descrição                                                |
+| ------------------ | -------------------------------------------------------- |
+| `pnpm build`       | Build do serviço (Nest CLI)                             |
+| `pnpm start:dev`   | Modo desenvolvimento (watch)                            |
+| `pnpm start:debug` | Modo desenvolvimento com debug + watch                  |
+| `pnpm start:prod`  | Rodar build final (`dist/main`)                         |
+| `pnpm lint`        | Biome check + write                                     |
+| `pnpm docker`      | Sobe PostgreSQL via docker-compose (down + up -d)       |
+
+## Como rodar local
+
+1. Instale as dependências:
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+pnpm install
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+2. Copie `.env.example` para `.env`:
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+cd apps/payments-service
+cp .env.example .env
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+3. Suba banco PostgreSQL + RabbitMQ (messaging-service):
 
-## Resources
+```bash
+# Na raiz do monorepo
+pnpm docker --filter=payments-service
+pnpm docker --filter=messaging-service  # Garante RabbitMQ
 
-Check out a few resources that may come in handy when working with NestJS:
+# Ou na pasta do app
+pnpm docker
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+4. Inicie o payments-service:
 
-## Support
+```bash
+pnpm dev --filter=payments-service
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+5. (Opcional) Para fluxo completo, inicie checkout-service:
 
-## Stay in touch
+```bash
+pnpm dev --filter=checkout-service
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Variáveis de ambiente (.env)
 
-## License
+| Variável                   | Padrão                          | Descrição                                   |
+| -------------------------- | ------------------------------- | ------------------------------------------- |
+| `PORT`                     | 4003                            | Porta HTTP do serviço                       |
+| `NODE_ENV`                 | `development`                   | Ambiente de execução                        |
+| `JWT_SECRET`               | —                               | Segredo JWT                                 |
+| `JWT_EXPIRES_IN`           | `7d`                            | Expiração do token                          |
+| `DB_HOST`                  | `localhost`                     | Host PostgreSQL                             |
+| `DB_PORT`                  | `5433`                          | Porta PostgreSQL                            |
+| `DB_USER`                  | `postgres`                      | Usuário PostgreSQL                          |
+| `DB_PASS`                  | `postgres`                      | Senha PostgreSQL                            |
+| `DB_NAME`                  | `payments-db`                   | Nome do banco                               |
+| `RABBITMQ_URL`             | `amqp://admin:admin@localhost`  | URI de conexão ao RabbitMQ                  |
+| `RABBITMQ_QUEUE_PAYMENT_ORDER`  | `payment_order`             | Fila de entrada de pedidos para pagamento   |
+| `RABBITMQ_QUEUE_PAYMENT_RESULT` | `payment_result`            | Fila de saída (exchange routing)            |
+| `RABBITMQ_DLQ`             | `payment_order_dlq`             | Dead Letter Queue (mensagens com falha)     |
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Endpoints principais
+
+| Método | Rota                 | Descrição                        | Auth |
+| ------ | -------------------- | -------------------------------- | ---- |
+| GET    | `/health`            | Health check                     | ❌   |
+| GET    | `/metrics`           | Métricas Prometheus              | ❌   |
+| GET    | `/doc`               | Scalar OpenAPI UI                | ❌   |
+| GET    | `/payments`          | Lista todos os pagamentos        | ✅   |
+| GET    | `/payments/:id`      | Detalhe de um pagamento          | ✅   |
+| GET    | `/payments/order/:orderId` | Busca por ID de pedido      | ✅   |
+
+## Mapeamento de status
+
+| Resultado do pagamento | Status do Payment | Evento publicado → checkout atualiza Order |
+| ---------------------- | ----------------- | ------------------------------------------- |
+| `approved`             | `APPROVED`        | Order → `APPROVED`                          |
+| `rejected`             | `REJECTED`        | Order → `PAYMENT_REJECTED`                  |
+
+## Métricas de negócio customizadas
+
+| Métrica                        | Tipo    | Labels   | Descrição                                          |
+| ------------------------------ | ------- | -------- | ---------------------------------------------------- |
+| `payments_processed_total`     | Counter | —        | Total de pagamentos processados (aprovados + rejeitados) |
+| `payments_approved_total`     | Counter | —        | Total de pagamentos aprovados                       |
+| `payments_rejected_total`     | Counter | `reason` | Total de pagamentos rejeitados (reason: limit_exceeded / card_declined) |
+
+## Observabilidade
+
+- **Métricas HTTP:** `http_requests_total`, `http_request_duration_seconds`
+- **Métricas de processo:** prefixo `payments_service_`
+- **Métricas de negócio:** counters acima
+- **Scrape Prometheus:** Job `payments-service` em `host.docker.internal:4003/metrics`
+
+## Hard constraints (regras de engenharia)
+
+1. Publicação de eventos de pagamento só ocorre **após persistência bem-sucedida no DB**.
+2. Flag `resultEventPublishedAt` garante publicação única (idempotência).
+3. Falhas no processamento enviam para DLQ (`payment_order_dlq`) para auditoria.
+
+## Documentação técnica adicional
+
+Consulte specs do checkout-service e api-gateway para contexto do fluxo completo.
